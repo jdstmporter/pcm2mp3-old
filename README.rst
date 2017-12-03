@@ -16,13 +16,13 @@ wav2mp3. **transcode** (*infile*, *outfile*, *bitrate=64*, *quality=5*)
 Arguments
 
   :infile:     
-    The name of the input WAV file, *with* its file extension.  E.g. 'audio.wav'.
+    The name of the input WAV file, *with* its file extension.  E.g. ``audio.wav``.
     
     It must be the name of a standard WAV file, containing mono or stereo 16 bit linear PCM encoded audio data.
     If it is not, then an exception is thrown.
 
   :outfile:    
-    The name to assign to the output MP3 file, *with* its file extension.  E.g. 'audio.mp3'.
+    The name to assign to the output MP3 file, *with* its file extension.  E.g. ``audio.mp3``.
     It has the same number of channels as *infile*.
     
 
@@ -45,13 +45,16 @@ Return value
   The size of *outfile* in bytes
 
 Exceptions
-  Throws a wav2mp3.**MP3Error** (see below) whenever ``libmp3lame`` throws an exception, or else the data doesn't do what the module expects (see below).
+  Throws a wav2mp3. **MP3Error** (see below) whenever ``libmp3lame`` throws an exception, or else the data doesn't do what the module expects (see below).
     
 
 Classes
 -------
 
-wav2mp3.**MP3Error**
+
+
+
+wav2mp3. **MP3Error**
 
 A child of the standard **Exception** class, reporting on errors occurring during transcoding.  Opaque.
 
@@ -66,6 +69,13 @@ Example
       wav2mp3.transcode("input.wav","output.mp3",bitrate=8)
   except wav2mp3.MP3Error as e:
       print(str(e))
+
+
+Acknowledgements
+----------------
+
+- `libmplame`
+- jpEs
 
 
   
