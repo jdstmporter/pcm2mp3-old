@@ -10,7 +10,6 @@
 
 #include "enums.hpp"
 #include "Iterator32.hpp"
-#include <memory>
 #include <lame/lame.h>
 
 
@@ -32,7 +31,7 @@ public:
 		Data(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it);
 	};
 
-	PCMFile() {};
+	PCMFile() : nChannels(), sampleRate(), bytesPerSample(), nSamples() {};
 	virtual ~PCMFile() = default;
 
 	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };

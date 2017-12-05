@@ -12,6 +12,11 @@
 #include <string>
 #include <exception>
 #include <iostream>
+#include <vector>
+#include <memory>
+
+using data_t = std::vector<char>;
+using cdata_t = std::vector<unsigned char>;
 
 
 	class MP3Error : public std::exception {

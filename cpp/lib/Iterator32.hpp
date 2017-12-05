@@ -8,13 +8,11 @@
 #ifndef ITERATOR32_HPP_
 #define ITERATOR32_HPP_
 
-#include <vector>
-#include <cstdint>
-#include <string>
+#include "enums.hpp"
+
 
 class Iterator32 {
 public:
-	using data_t = std::vector<char>;
 private:
 	data_t::const_iterator end;
 	data_t::const_iterator it;

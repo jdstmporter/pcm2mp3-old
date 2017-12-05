@@ -7,8 +7,6 @@
 
 #include "WAVFile.hpp"
 
-#include <stdexcept>
-
 
 
 
@@ -62,24 +60,22 @@ void WAVFile::parseHeader() {
 	
 }
 
-WAVFile::WAVFile(const Iterator32::data_t &file_) : PCMFile(), file(file_) {
+WAVFile::WAVFile(const data_t &file_) : PCMFile(), file(file_) {
 	parseHeader();
 }
 
-WAVFile::WAVFile(std::ifstream &stream) {
+WAVFile::WAVFile(std::istream &stream) {
 	stream.seekg (0, stream.end);
     auto length = stream.tellg();
     stream.seekg (0, stream.beg);
     
-    file=Iterator32::data_t(length,0);
+    file=data_t(length,0);
     auto c=file.data();
     int pos=0;
     while(pos<length) {
     	stream.read(c+pos,1024);
     	pos+=stream.gcount();
     }
-    stream.close();
-    
     parseHeader();
 }
 
@@ -98,7 +94,7 @@ PCMFile::Data WAVFile::bytes() {
 	return PCMFile::Data(nChannels,nSamples,it);
 }
 
-std::ifstream & operator >> (std::ifstream &i,WAVFile &w) {
+std::istream & operator >> (std::istream &i,WAVFile &w) {
 	w=WAVFile(i);
 	return i;
 }

@@ -6,14 +6,21 @@ Created on 1 Dec 2017
 '''
 from setuptools import setup, Extension
 from setuptools.config import read_configuration
+import utils
+from sys import exit
+
+checker=utils.CheckLibrary("mp3lame")
+checker.test()
+if not checker['mp3lame']:
+    print("Cannot build wav2mp3 unless libmp3lame is installed and on the compiler path")
+    exit(1)
 
 configuration=read_configuration('setup.cfg')
-print(configuration)
 metadata=configuration['metadata']
 
 package=metadata['name']
 
-libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp', 'enums.cpp', 'Iterator32.cpp']
+libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp', 'enums.cpp', 'Iterator32.cpp','transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
 qsrc=['Member.cpp','Quality.cpp']
@@ -26,6 +33,7 @@ def makeExtension(module,src):
                     define_macros = [('MAJOR_VERSION', majorV),
                                      ('MINOR_VERSION', minorV)],
                     sources = ['cpp/'+s for s in src],
+                    language = 'c++',
                     include_dirs=['/usr/include'],
                     libraries = ['mp3lame'],
                     library_dirs = ['/usr/lib/x86_64-linux-gnu'])
@@ -37,7 +45,7 @@ quality = makeExtension('quality',qsrc)
 setup (
     entry_points = {
         'distutils.commands' : [
-           'cleaner = clean:Cleaner' 
+           'cleaner = utils:Cleaner' 
            ]
         },
     ext_modules = [coder,rates,quality],

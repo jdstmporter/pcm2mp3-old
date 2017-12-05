@@ -8,14 +8,8 @@
 #ifndef DEBUG_WAVFILE_HPP_
 #define DEBUG_WAVFILE_HPP_
 
-#include <vector>
 #include "PCMFile.hpp"
 #include "enums.hpp"
-#include <cstdint>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <memory>
 #include "Iterator32.hpp"
 
 
@@ -30,7 +24,7 @@ protected:
 		ULaw = 7
 	};
 private:
-	Iterator32::data_t file;
+	data_t file;
 	std::pair<long,long> clip();
 	void parseHeader();
 	
@@ -43,8 +37,8 @@ protected:
 	static DataFormat convertFormat(const uint16_t);
 public:
 	
-	WAVFile(const Iterator32::data_t &file_);
-	WAVFile(std::ifstream & stream);
+	WAVFile(const data_t &file_);
+	WAVFile(std::istream & stream);
 	
 	
 	//WAVFile(const Mode & mode_,const SampleRate & rate_,int sampleSize) : PCMFile(mode_,rate_,sampleSize) {};
@@ -55,7 +49,7 @@ public:
 	
 	
 };
-std::ifstream & operator >> (std::ifstream &i,WAVFile &w);
+std::istream & operator >> (std::istream &i,WAVFile &w);
 std::ostream & operator << (std::ostream &o,const WAVFile &w);
 
 #endif /* DEBUG_WAVFILE_HPP_ */
