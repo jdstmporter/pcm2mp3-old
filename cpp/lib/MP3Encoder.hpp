@@ -8,21 +8,20 @@
 #ifndef MP3ENCODER_HPP_
 #define MP3ENCODER_HPP_
 
-#include "enums.hpp"
 #include "PCMFile.hpp"
 #include <lame/lame.h>
+#include "base.hpp"
 
 
 
 
 
-
+namespace pylame { namespace mp3 {
 
 
 class MP3Encoder {
-friend std::ostream & operator<<(std::ostream &o,const MP3Encoder &e);
 private:
-	PCMFile * data;
+	pcm::PCMFile * data;
 	unsigned nSamples;
 	unsigned mp3Size;
 	unsigned char *mp3Out;
@@ -33,7 +32,7 @@ private:
 
 public:
 	MP3Encoder() : data(nullptr), nSamples(0), mp3Size(0), mp3Out(nullptr), gf(nullptr), output() {};
-	MP3Encoder(PCMFile *data_,const unsigned quality,const unsigned rate);
+	MP3Encoder(pcm::PCMFile *data_,const unsigned quality,const unsigned rate);
 	virtual ~MP3Encoder();
 	
 	void transcode();
@@ -42,12 +41,14 @@ public:
 	cdata_t::const_iterator cbegin() const { return output.cbegin(); };
 	cdata_t::const_iterator cend() const { return output.cend(); };
 	unsigned size() const { return mp3Size; };
-	char *ptr() { return (char *)output.data(); };
+	const unsigned char *ptr() const { return output.data(); };
 	cdata_t & operator()() { return output; };
 
 };
 
-std::ostream & operator<<(std::ostream &o,const MP3Encoder &e);
+}}
+
+std::ostream & operator<<(std::ostream &o,const pylame::mp3::MP3Encoder &e);
 
 
 

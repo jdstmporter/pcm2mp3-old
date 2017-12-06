@@ -9,6 +9,8 @@
 #include "Iterator32.hpp"
 #include <algorithm>
 
+namespace pylame { namespace pcm {
+
 Converter80::Converter80() {
 	std::fill_n(bytes,10,0);
 }
@@ -46,3 +48,5 @@ unsigned swap32(uint16_t u1,uint16_t u2) {
 	return (unsigned)(top|bot);
 	
 }
+
+}}

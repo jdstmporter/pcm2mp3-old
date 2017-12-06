@@ -5,8 +5,8 @@
  *      Author: julianporter
  */
 
-#ifndef ENUMS_HPP_
-#define ENUMS_HPP_
+#ifndef BASE_HPP_
+#define BASE_HPP_
 
 #include <cstdint>
 #include <string>
@@ -15,12 +15,13 @@
 #include <vector>
 #include <memory>
 
+namespace pylame {
+
 using data_t = std::vector<char>;
 using cdata_t = std::vector<unsigned char>;
 
 
 	class MP3Error : public std::exception {
-	friend std::ostream & operator<<(std::ostream &o,const MP3Error &ex);
 	private:
 		std::string message;
 	public:
@@ -34,13 +35,17 @@ using cdata_t = std::vector<unsigned char>;
 		
 	};
 	
-	std::ostream & operator<<(std::ostream &o,const MP3Error &ex);
+
 
 	enum class Mode  {
 		Mono,
 		Stereo
 	};
 
+}
+
+std::ostream & operator<<(std::ostream &o,const pylame::MP3Error &ex);
+
 
 	
 	
@@ -51,4 +56,4 @@ using cdata_t = std::vector<unsigned char>;
 
 
 
-#endif /* ENUMS_HPP_ */
+#endif /* BASE_HPP_ */

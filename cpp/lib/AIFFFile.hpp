@@ -9,15 +9,16 @@
 #define AIFFFILE_HPP_
 
 
-#include "enums.hpp"
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
 #include <map>
 #include <memory>
+#include "base.hpp"
+
+namespace pylame { namespace pcm {
 
 
 class Chunk {
-friend std::ostream & operator<<(std::ostream &o,const Chunk &c);
 private:
 	std::string ID;
 	data_t data;
@@ -31,12 +32,12 @@ public:
 	
 	unsigned size() const { return data.size(); };
 	std::shared_ptr<Iterator32> iterator() const { return std::make_shared<Iterator32>(data); };
-
+	std::string kind() const { return ID; };
 };
 
 
 
-std::ostream & operator<<(std::ostream &o,const Chunk &c);
+
 
 class Form {
 private:
@@ -95,5 +96,9 @@ public:
 	void process();
 	
 };
+
+}}
+
+std::ostream & operator<<(std::ostream &o,const pylame::pcm::Chunk &c);
 
 #endif /* AIFFFILE_HPP_ */

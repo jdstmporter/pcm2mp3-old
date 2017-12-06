@@ -8,9 +8,10 @@
 #ifndef ITERATOR32_HPP_
 #define ITERATOR32_HPP_
 
-#include "enums.hpp"
+#include "base.hpp"
 #include "Conversions.hpp"
 
+namespace pylame { namespace pcm {
 
 class Iterator32 {
 public:
@@ -47,6 +48,8 @@ public:
 
 	unsigned size() const { return end-it; }
 };
+
+}}
 
 
 

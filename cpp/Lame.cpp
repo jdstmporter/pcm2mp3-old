@@ -6,7 +6,6 @@
  */
 
 #include "PyHeader.hpp"
-#include "lib/enums.hpp"
 #include "lib/WAVFile.hpp"
 #include "lib/MP3Encoder.hpp"
 #include "lib/Iterator32.hpp"
@@ -16,6 +15,8 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include "lib/base.hpp"
+
 
 static PyObject *mp3Error;
 
@@ -40,7 +41,7 @@ bool checkName(const char *name,const char *suffix) {
 	return std::regex_match(name,std::regex(s.str()));
 }
 
-static PyObject * mp3(PyObject *self, PyObject *args, PyObject *keywds) {
+static PyObject * mp3file(PyObject *self, PyObject *args, PyObject *keywds) {
 	const char *inFile;
 	const char *outFile;
 	unsigned bitRate = 64;
@@ -52,11 +53,11 @@ static PyObject * mp3(PyObject *self, PyObject *args, PyObject *keywds) {
 			throw PException(PyExc_TypeError,"API is transcode(infile,outfile,bitrate=64,quality=5)");
 		}
 		try {
-			if(!checkName(inFile,"wav")) throw MP3Error("Source file does not have .wav suffix");
-			if(!checkName(outFile,"mp3")) throw MP3Error("Destination file does not have .mp3 suffix");
+			if(!checkName(inFile,"wav")) throw pylame::MP3Error("Source file does not have .wav suffix");
+			if(!checkName(outFile,"mp3")) throw pylame::MP3Error("Destination file does not have .mp3 suffix");
 
 			std::ifstream wavFile(inFile,std::ifstream::binary);
-			Transcode transcode(wavFile,quality,bitRate);
+			pylame::Transcode transcode(wavFile,quality,bitRate);
 			std::ofstream out(outFile,std::ofstream::binary);
 			out << transcode;
 			out.close();
@@ -82,8 +83,8 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 		}
 		try {
 			char *orig=(char *)buffer.buf;
-			data_t data(orig,orig+buffer.len);
-			Transcode transcode(data,quality,bitRate);
+			pylame::data_t data(orig,orig+buffer.len);
+			pylame::Transcode transcode(data,quality,bitRate);
 			auto out = Py_BuildValue("y#",transcode.ptr(),transcode.size());
 			PyBuffer_Release(&buffer);
 			return out;
@@ -102,7 +103,7 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 
 
 static struct PyMethodDef methods[] = {
-		{"transcodeF",(PyCFunction) mp3, METH_VARARGS | METH_KEYWORDS, "Transcode file"},
+		{"transcodeF",(PyCFunction) mp3file, METH_VARARGS | METH_KEYWORDS, "Transcode file"},
 		{"transcodeS",(PyCFunction) mp3stream, METH_VARARGS | METH_KEYWORDS, "Transcode bytes"},
 		{NULL, NULL, 0, NULL}
 };

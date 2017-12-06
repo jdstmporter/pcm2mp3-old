@@ -8,11 +8,11 @@
 #ifndef DEBUG_WAVFILE_HPP_
 #define DEBUG_WAVFILE_HPP_
 
+#include "base.hpp"
 #include "PCMFile.hpp"
-#include "enums.hpp"
 #include "Iterator32.hpp"
 
-
+namespace pylame { namespace pcm {
 
 class WAVFile : public PCMFile {
 friend std::ostream & operator << (std::ostream &o,const WAVFile &w);
@@ -40,10 +40,13 @@ public:
 
 	
 	virtual PCMFile::Data bytes(); // Gives interleaved data
-	
+	virtual unsigned size() const { return nBytes; };
+	virtual unsigned dSize() const { return dataSize; };
 	
 };
-std::istream & operator >> (std::istream &i,WAVFile &w);
-std::ostream & operator << (std::ostream &o,const WAVFile &w);
+}}
+
+std::istream & operator >> (std::istream &i,pylame::pcm::WAVFile &w);
+std::ostream & operator << (std::ostream &o,const pylame::pcm::WAVFile &w);
 
 #endif /* DEBUG_WAVFILE_HPP_ */

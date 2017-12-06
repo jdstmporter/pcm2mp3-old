@@ -9,6 +9,7 @@
 #include "Conversions.hpp"
 #include <iomanip>
 
+using namespace pylame :: pcm;
 
 Converter32 Iterator32::convertNext() {
 	Converter32 c;
@@ -61,6 +62,8 @@ char Iterator32::get() {
 	if(it==end) throw MP3Error("Overrun end of file");
 	return *it++;
 }
+
+
 
 
 

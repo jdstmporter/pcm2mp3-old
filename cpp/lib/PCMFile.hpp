@@ -8,11 +8,11 @@
 #ifndef PCMFILE_HPP_
 #define PCMFILE_HPP_
 
-#include "enums.hpp"
 #include "Iterator32.hpp"
 #include <lame/lame.h>
+#include "base.hpp"
 
-
+namespace pylame { namespace pcm {
 
 class PCMFile {
 protected:
@@ -44,13 +44,18 @@ public:
 
 	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };
 	MPEG_mode mp3Mode() { return nChannels==1 ? MONO : JOINT_STEREO; };
-	virtual unsigned samplesPerSecond() { return sampleRate; };
+	virtual unsigned samplesPerSecond() const { return sampleRate; };
 	
 	virtual Data bytes() { throw MP3Error("Not implemented"); };
-	virtual unsigned samplesPerChannel() { return nSamples; };
-	virtual unsigned short nChans() { return nChannels; };
+	virtual unsigned samplesPerChannel() const { return nSamples; };
+	virtual unsigned short nChans() const { return nChannels; };
+	virtual unsigned size() const { throw MP3Error("Not implemented"); };
+	virtual unsigned dSize() const { throw MP3Error("Not implemented"); };
+	virtual unsigned sampleSize() const { return 8*bytesPerSample; };
 	
 };
+
+}}
 
 
 

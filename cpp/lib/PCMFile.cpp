@@ -7,6 +7,8 @@
 
 #include "PCMFile.hpp"
 
+namespace pylame { namespace pcm {
+
 PCMFile::Data::Data(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it) : 
 	nChannels(nChannels_), nSamples(nSamples_) {
 	if(nChannels<1 || nChannels>2) throw MP3Error("Invalid number of channels");
@@ -36,3 +38,5 @@ PCMFile::Data::Data(const unsigned nChannels_,const unsigned nSamples_,Iterator3
 	left=std::shared_ptr<short>(lBuffer);
 	right=std::shared_ptr<short>(rBuffer);
 }
+
+}}

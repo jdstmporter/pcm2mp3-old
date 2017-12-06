@@ -9,9 +9,10 @@
 #include <algorithm>
 #include "Conversions.hpp"
 
+using namespace pylame::pcm;
 
 std::ostream & operator<<(std::ostream &o,const Chunk &c) {
-	o << "Chunk of type '" << c.ID << "' and length " << c.size();
+	o << "Chunk of type '" << c.kind() << "' and length " << c.size();
 	return o;
 }
 
@@ -29,12 +30,12 @@ std::vector<Chunk> Form::operator[](const std::string &ID) {
 
 bool Form::nextChunk() {
 	try {
-		auto ID=it.nextString();
+		auto idx=it.nextString();
 		auto n=swap32(it.nextInt());
 		data_t d(n,0);
 		it.getN(n,d.data());
-		Chunk c(ID,d);
-		chunks.insert(std::make_pair(ID,c));
+		Chunk c(idx,d);
+		chunks.insert(std::make_pair(idx,c));
 		return true;
 	}
 	catch(...) {
@@ -131,3 +132,5 @@ void AIFFFile::soundChunk(const Chunk &ssnd) {
     	std::cout << "blockSize = " << blockSize << std::endl;
     	std::cout << "iterator size = " << iterator->size() << std::endl;
 }
+
+

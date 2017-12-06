@@ -8,7 +8,11 @@
 #ifndef CONVERSIONS_HPP_
 #define CONVERSIONS_HPP_
 
-#include "enums.hpp"
+#include "base.hpp"
+
+namespace pylame { namespace pcm {
+
+
 class Iterator32;
 
 union Converter32 {
@@ -59,7 +63,7 @@ unsigned swap32(unsigned in);
 unsigned swap32(uint16_t u1,uint16_t u2);
 std::pair<uint16_t,uint16_t> swap16(std::pair<uint16_t,uint16_t> in);
 
-
+}}
 
 
 #endif /* CONVERSIONS_HPP_ */

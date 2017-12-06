@@ -9,7 +9,7 @@
 
 
 
-
+namespace pylame { namespace pcm {
 
 
 WAVFile::DataFormat WAVFile::convertFormat(const uint16_t value) {
@@ -94,17 +94,19 @@ PCMFile::Data WAVFile::bytes() {
 	return PCMFile::Data(nChannels,nSamples,it);
 }
 
-std::istream & operator >> (std::istream &i,WAVFile &w) {
-	w=WAVFile(i);
+}}
+
+std::istream & operator >> (std::istream &i,pylame::pcm::WAVFile &w) {
+	w=pylame::pcm::WAVFile(i);
 	return i;
 }
 
-std::ostream & operator << (std::ostream &o,const WAVFile &w) {
-	o << "Size            " << w.nBytes << std::endl;
-	o << "N Channels      " << w.nChannels  << std::endl;
-	o << "Sample rate     " << w.sampleRate << std::endl;
-	o << "Bits per sample " << w.bitsPerSample << std::endl;
-	o << "Data size       " << w.dataSize << std::endl;
-	o << "N Samples       " << w.nSamples << std::endl;
+std::ostream & operator << (std::ostream &o,const pylame::pcm::WAVFile &w) {
+	o << "Size            " << w.size() << std::endl;
+	o << "N Channels      " << w.nChans()  << std::endl;
+	o << "Sample rate     " << w.samplesPerSecond() << std::endl;
+	o << "Bits per sample " << w.sampleSize() << std::endl;
+	o << "Data size       " << w.dSize() << std::endl;
+	o << "N Samples       " << w.samplesPerChannel() << std::endl;
 	return o;
 }

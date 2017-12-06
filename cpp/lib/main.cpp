@@ -5,11 +5,11 @@
  *      Author: julianporter
  */
  
- #include "enums.hpp"
  #include "AIFFFile.hpp"
  #include "MP3Encoder.hpp"
  #include <iostream>
  #include <fstream>
+#include "base.hpp"
  
  
  int main(int argc,char *argv[]) {
@@ -17,7 +17,7 @@
  	try {
  		std::cout << "Loading test.aiff" << std::endl;
  		std::ifstream aiffFile("test.aiff",std::ifstream::binary);
-		AIFFFile aiff(aiffFile);
+		pylame::pcm::AIFFFile aiff(aiffFile);
 		/*std::cout << aiff;
 		std::cout << "Creating LAME object" << std::endl;
 		MP3Encoder mp3(&wav,Quality::Good_Fast,BitRate::High);

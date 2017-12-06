@@ -8,14 +8,14 @@
 #include "MP3Encoder.hpp"
 #include <algorithm>
 
-
+namespace pylame { namespace mp3 {
 
 unsigned MP3Encoder::mp3SizeCalc(unsigned n) {
 	return unsigned((double)n*1.25+7200.0);
 }
 
 
-MP3Encoder::MP3Encoder(PCMFile *data_,const unsigned quality,const unsigned rate) :
+MP3Encoder::MP3Encoder(pcm::PCMFile *data_,const unsigned quality,const unsigned rate) :
 	data(data_), nSamples(data->samplesPerChannel()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
 		
 	gf = lame_init();
@@ -56,10 +56,12 @@ void MP3Encoder::transcode() {
 	}
 }
 
-std::ostream & operator<<(std::ostream &o,const MP3Encoder &e) {
-	const unsigned char *u=e.mp3Out;
+}}
+
+std::ostream & operator<<(std::ostream &o,const pylame::mp3::MP3Encoder &e) {
+	const unsigned char *u=e.ptr();
 	const char *d=reinterpret_cast<const char *>(u);
-	o.write(d,e.mp3Size);
+	o.write(d,e.size());
 	return o;
 }
      
