@@ -16,13 +16,7 @@
 
 class WAVFile : public PCMFile {
 friend std::ostream & operator << (std::ostream &o,const WAVFile &w);
-protected:
-	enum class DataFormat : uint16_t {
-		PCM = 1,
-		IEEEFloat = 3,
-		ALaw = 6,
-		ULaw = 7
-	};
+
 private:
 	data_t file;
 	std::pair<long,long> clip();

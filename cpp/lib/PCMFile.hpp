@@ -16,6 +16,14 @@
 
 class PCMFile {
 protected:
+protected:
+	enum class DataFormat : uint16_t {
+		PCM = 1,
+		IEEEFloat = 3,
+		ALaw = 6,
+		ULaw = 7
+	};
+
 	unsigned short nChannels;
 	unsigned sampleRate;
 	unsigned bytesPerSample;

@@ -6,10 +6,12 @@
  */
 
 #include "Iterator32.hpp"
-#include "enums.hpp"
+#include "Conversions.hpp"
+#include <iomanip>
 
-Iterator32::Converter Iterator32::convertNext() {
-	Iterator32::Converter c;
+
+Converter32 Iterator32::convertNext() {
+	Converter32 c;
 	for(auto i=0;i<4;i++) {
 		if(it==end) throw MP3Error("Overrun end of file");
 		c.bytes[i]=*it;
@@ -18,9 +20,19 @@ Iterator32::Converter Iterator32::convertNext() {
 	return c;
 }
 
+Converter64 Iterator32::convertNext64() {
+	Converter64 c;
+	for(auto i=0;i<8;i++) {
+		if(it==end) throw MP3Error("Overrun end of file");
+		c.bytes[i]=*it;
+		it++;
+	}
+	return c;
+}
 
-uint32_t Iterator32::nextInt() {
-	return convertNext().u32;
+long double Iterator32::nextLongDouble() {
+	Float80 f(it);
+	return (long double)f;
 }
 
 std::string Iterator32::nextString()  {
@@ -37,6 +49,20 @@ std::pair<uint16_t,uint16_t> Iterator32::nextPair()  {
 	return std::make_pair(a[0],a[1]);
 }
 
-void Iterator32::skip(unsigned n) {
-	it+=(4*n);
+void Iterator32::getN(const unsigned n,char *data) {
+	for(unsigned i=0;i<n;i++) {
+		if(it==end) throw MP3Error("Overrun end of file");
+		data[i]=*it;
+		it++;
+	}
 }
+
+char Iterator32::get() {
+	if(it==end) throw MP3Error("Overrun end of file");
+	return *it++;
+}
+
+
+
+
+

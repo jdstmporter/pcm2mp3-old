@@ -72,8 +72,6 @@ static PyObject * mp3(PyObject *self, PyObject *args, PyObject *keywds) {
 }
 
 static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
-	const char *inFile;
-	Py_ssize_t nBytes;
 	unsigned bitRate = 64;
 	unsigned quality = 5;
 	Py_buffer buffer;
