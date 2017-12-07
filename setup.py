@@ -12,7 +12,7 @@ from sys import exit
 checker=utils.CheckLibrary("mp3lame")
 checker.test()
 if not checker['mp3lame']:
-    print("Cannot build wav2mp3 unless libmp3lame is installed and on the compiler path")
+    print("Cannot build pcm2mp3 unless libmp3lame is installed and on the compiler path")
     exit(1)
 
 configuration=read_configuration('setup.cfg')
@@ -20,7 +20,8 @@ metadata=configuration['metadata']
 
 package=metadata['name']
 
-libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp', 'enums.cpp', 'Iterator32.cpp','transcoder.cpp']
+libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'AIFFData.cpp',
+        'base.cpp', 'Conversions.cpp', 'Iterator32.cpp','transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
 qsrc=['Member.cpp','Quality.cpp']
@@ -38,7 +39,7 @@ def makeExtension(module,src):
                     libraries = ['mp3lame'],
                     library_dirs = ['/usr/lib/x86_64-linux-gnu'])
 
-coder = makeExtension('_wav2mp3',wsrc)
+coder = makeExtension('_pcm2mp3',wsrc)
 rates = makeExtension('rates',rsrc)
 quality = makeExtension('quality',qsrc)
 

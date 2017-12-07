@@ -11,63 +11,11 @@
 
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
-#include <map>
-#include <memory>
 #include "base.hpp"
+#include "AIFFData.hpp"
 
 namespace pylame { namespace pcm {
 
-
-class Chunk {
-private:
-	std::string ID;
-	data_t data;
-	
-		
-public:
-	Chunk(const std::string &name,const data_t &data_) : ID(name), data(data_) {};
-	Chunk(const Chunk &) = default;
-	virtual ~Chunk() = default;
-	Chunk & operator=(const Chunk &) = default;
-	
-	unsigned size() const { return data.size(); };
-	std::shared_ptr<Iterator32> iterator() const { return std::make_shared<Iterator32>(data); };
-	std::string kind() const { return ID; };
-};
-
-
-
-
-
-class Form {
-private:
-	enum class Type {
-		AIFF,
-		AIFC,
-		Other
-	};
-	Iterator32 it;
-	Type fileType;
-	std::multimap<std::string,Chunk> chunks;
-	
-	bool nextChunk();
-	
-	
-public:
-	
-	Form(Iterator32 &ptr) : it(ptr), fileType(Type::Other), chunks() {};
-	virtual ~Form() = default;
-	
-	void walk();
-	
-	
-	unsigned size() const { return chunks.size(); };
-	
-	bool has(const std::string &key) const { return chunks.count(key)>0; };
-	std::vector<Chunk> operator[](const std::string &);
-
-
-};
 
 
 
@@ -77,12 +25,15 @@ class AIFFFile: public PCMFile {
 
 private:
 	data_t file;
-	std::shared_ptr<Iterator32> iterator;
+	aiff::Form form;
+	Iterator32 iterator;
+	unsigned offset;
+	unsigned blocksize;
 	
-	void commChunk(const Chunk &f);
-	void soundChunk(const Chunk &f);
+	void commChunk(const aiff::Chunk &f);
+	void soundChunk(const aiff::Chunk &f);
 	
-	
+	void parseHeader();
 
 	
 protected:
@@ -90,15 +41,19 @@ protected:
 	
 	
 public:
+	AIFFFile(const data_t &file_);
 	AIFFFile(std::istream &);
 	virtual ~AIFFFile() = default;
-	
-	void process();
-	
+
+	virtual PCMData bytes();
+
+	static bool isInstance(const data_t &d);
+	static bool isInstance(std::istream &stream) ;
 };
 
 }}
 
-std::ostream & operator<<(std::ostream &o,const pylame::pcm::Chunk &c);
+
+
 
 #endif /* AIFFFILE_HPP_ */

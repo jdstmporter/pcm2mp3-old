@@ -31,7 +31,7 @@ void WAVFile::parseHeader() {
 	Iterator32 it(file);
 	auto riff=it.nextString();
 	if (riff!="RIFF") throw MP3Error("RIFF tag not present");
-	nBytes=it.nextInt();
+	nBytesInFile=it.nextInt();
 	auto wave=it.nextString();
 	if (wave!="WAVE") throw MP3Error("WAVE tag not present");
 	auto fmt=it.nextString();
@@ -85,13 +85,13 @@ std::pair<long,long> WAVFile::clip() {
 }
 
 
-PCMFile::Data WAVFile::bytes() {
+PCMData WAVFile::bytes() {
 	if(format!=DataFormat::PCM) throw MP3Error("Can only enumerate PCM files");
 	
 	Iterator32 it(file);
 	it.skip(11);	// skip over header
 	
-	return PCMFile::Data(nChannels,nSamples,it);
+	return PCMData(nChannels,nSamples,it);
 }
 
 }}
@@ -101,12 +101,4 @@ std::istream & operator >> (std::istream &i,pylame::pcm::WAVFile &w) {
 	return i;
 }
 
-std::ostream & operator << (std::ostream &o,const pylame::pcm::WAVFile &w) {
-	o << "Size            " << w.size() << std::endl;
-	o << "N Channels      " << w.nChans()  << std::endl;
-	o << "Sample rate     " << w.samplesPerSecond() << std::endl;
-	o << "Bits per sample " << w.sampleSize() << std::endl;
-	o << "Data size       " << w.dSize() << std::endl;
-	o << "N Samples       " << w.samplesPerChannel() << std::endl;
-	return o;
-}
+

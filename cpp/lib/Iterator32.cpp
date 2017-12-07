@@ -47,7 +47,7 @@ std::string Iterator32::nextString()  {
 
 std::pair<uint16_t,uint16_t> Iterator32::nextPair()  {
 	auto a=convertNext().u16;
-	return std::make_pair(a[0],a[1]);
+	return wrap(std::make_pair(a[0],a[1]));
 }
 
 void Iterator32::getN(const unsigned n,char *data) {

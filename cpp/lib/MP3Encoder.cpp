@@ -15,7 +15,7 @@ unsigned MP3Encoder::mp3SizeCalc(unsigned n) {
 }
 
 
-MP3Encoder::MP3Encoder(pcm::PCMFile *data_,const unsigned quality,const unsigned rate) :
+MP3Encoder::MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate) :
 	data(data_), nSamples(data->samplesPerChannel()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
 		
 	gf = lame_init();

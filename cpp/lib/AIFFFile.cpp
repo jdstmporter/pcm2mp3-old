@@ -8,60 +8,16 @@
 #include "AIFFFile.hpp"
 #include <algorithm>
 #include "Conversions.hpp"
-
+#include <cstdlib>
 using namespace pylame::pcm;
 
-std::ostream & operator<<(std::ostream &o,const Chunk &c) {
-	o << "Chunk of type '" << c.kind() << "' and length " << c.size();
-	return o;
+
+
+
+
+AIFFFile::AIFFFile(const data_t &file_) : PCMFile(), file(file_) {
+	parseHeader();
 }
-
-
-
-
-std::vector<Chunk> Form::operator[](const std::string &ID) {
-	auto begin=chunks.lower_bound(ID);
-	auto end=chunks.upper_bound(ID);
-	if(begin==end) throw MP3Error("No instances of chunk kind found");
-	std::vector<Chunk> c;
-	for(auto ic=begin;ic!=end;ic++) c.push_back(ic->second);
-	return c;
-}
-
-bool Form::nextChunk() {
-	try {
-		auto idx=it.nextString();
-		auto n=swap32(it.nextInt());
-		data_t d(n,0);
-		it.getN(n,d.data());
-		Chunk c(idx,d);
-		chunks.insert(std::make_pair(idx,c));
-		return true;
-	}
-	catch(...) {
-		return false;
-	}
-	
-}
-
-
-
-void Form::walk() {
-	auto s=it.nextString();
-	if(s!="FORM") throw MP3Error("File is not AIFF - missing FORM");
-	auto len=swap32(it.nextInt());
-	auto t=it.nextString();
-	std::cout << "Length = " <<  std::hex << len << std::dec << std::endl;
-	std::cout << "Type string = '" << t << "'" << std::endl;
-	if(t=="AIFF") fileType=Type::AIFF;
-	else if(t=="AIFC") fileType=Type::AIFC;
-	else throw MP3Error("Unrecognised file type");
-	
-	while(nextChunk()) {};
-	std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.second << std::endl; });
-}
-
-
 
 
 
@@ -77,60 +33,86 @@ AIFFFile::AIFFFile(std::istream &stream) : file(), iterator() {
     	stream.read(c+pos,1024);
     	pos+=stream.gcount();
     }
-    Iterator32 it(file);
-    Form f(it);
-    f.walk();
+    parseHeader();
+
+}
+
+void AIFFFile::parseHeader() {
+    Iterator32 it(file,Iterator32::Endianness::BigEndian);
+    form=aiff::Form(it);
+    form.walk();
+    nBytesInFile=form.bytesInFile();
     
-    auto common=f["COMM"];
+    auto common=form["COMM"];
     if(common.size()!=1) throw MP3Error("Anomalous AIFF file with multiple COMM chunks");
     auto comm=*common.begin();
     std::cout << "Processing COMM block" << std::endl;
     commChunk(comm);
     
-    auto ssnds=f["SSND"];
+    auto ssnds=form["SSND"];
     if(ssnds.size()!=1) throw MP3Error("Anomalous AIFF file with multiple SSND chunks");
 	auto ssnd=*ssnds.begin();
 	 std::cout << "PROCESSING SSND CHUNK" << std::endl;
     soundChunk(ssnd);
-    
-    
-    
 }
 
-void AIFFFile::commChunk(const Chunk &comm) {
+void AIFFFile::commChunk(const aiff::Chunk &comm) {
 	
 
     auto itc=comm.iterator();
     
-    auto p1=swap16(itc->nextPair());
-    auto p2=swap16(itc->nextPair());
+    auto p1=itc.nextPair();
+    auto p2=itc.nextPair();
     nChannels=(unsigned)p1.first;
-    nSamples=swap32(p1.second,p2.first);
-    auto sSize=(unsigned)p2.second;
+    nSamples=swap(p1.second,p2.first);
+    bitsPerSample=(unsigned)p2.second;
+    sampleRate=(unsigned)itc.nextLongDouble();
     
-    bytesPerSample=(sSize+7)/8;
-    sampleRate=(unsigned)itc->nextLongDouble();
-    
-    std::cout << "nChannels = " << nChannels << std::endl;
-    std::cout << "nSamples = " << nSamples << std::endl;
-    std::cout << "Size = " << sSize << std::endl;
-    std::cout << "Bytes per sample = " << bytesPerSample << std::endl;
-    std::cout << "Rate = " << sampleRate << std::endl;
+
     
     
 }
 
-void AIFFFile::soundChunk(const Chunk &ssnd) {
+void AIFFFile::soundChunk(const aiff::Chunk &ssnd) {
 	 
-	 	auto len=ssnd.size();
-	 	iterator=ssnd.iterator();
-	 	auto offset=swap32(iterator->nextInt());
-	 	auto blockSize=swap32(iterator->nextInt());
-	 	
-	 	std::cout << "nBytes = " << len << std::endl;
-    	std::cout << "offset = " << offset << std::endl;
-    	std::cout << "blockSize = " << blockSize << std::endl;
-    	std::cout << "iterator size = " << iterator->size() << std::endl;
+	 	dataSize=ssnd.size()-8;
+	 	auto it=ssnd.iterator();
+	 	offset=it.nextInt();
+	 	blocksize=it.nextInt();
+	 	if(it.size()!=dataSize) throw MP3Error("Data size error");
 }
+
+PCMData AIFFFile::bytes() {
+	if(offset!=0 || blocksize!=0) throw MP3Error("Cannot enumerate blocked data sets");
+	auto qr=std::div(bitsPerSample,8);
+	if(qr.rem!=0) throw MP3Error("Cannot enumerate non-integral byte samples");
+	bytesPerSample=qr.quot;
+
+	aiff::Chunk ssnd=*form["SSND"].begin();
+	auto it=ssnd.iterator();
+	it.skip(2);
+	return PCMData(nChannels,nSamples,it);
+}
+
+
+bool AIFFFile::isInstance(const data_t &d) {
+			try {
+				AIFFFile w(d);
+				return true;
+			}
+			catch(...) {
+				return false;
+			}
+		};
+bool AIFFFile::isInstance(std::istream &stream) {
+			try {
+				AIFFFile w(stream);
+				return true;
+			}
+			catch(std::exception &e) {
+				std::cout << e.what() << std::endl;
+				return false;
+			}
+		};
 
 

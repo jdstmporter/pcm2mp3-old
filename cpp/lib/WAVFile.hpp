@@ -23,9 +23,7 @@ private:
 	void parseHeader();
 	
 protected:
-	unsigned nBytes;
-	unsigned bitsPerSample;
-	unsigned dataSize;
+
 	
 	DataFormat format;
 	static DataFormat convertFormat(const uint16_t);
@@ -39,14 +37,30 @@ public:
 	virtual ~WAVFile() = default;
 
 	
-	virtual PCMFile::Data bytes(); // Gives interleaved data
-	virtual unsigned size() const { return nBytes; };
-	virtual unsigned dSize() const { return dataSize; };
+	virtual PCMData bytes(); // Gives interleaved data
 	
+	static bool isInstance(const data_t &d) {
+		try {
+			WAVFile w(d);
+			return true;
+		}
+		catch(...) {
+			return false;
+		}
+	};
+	static bool isInstance(std::istream &stream) {
+		try {
+			WAVFile w(stream);
+			return true;
+		}
+		catch(...) {
+			return false;
+		}
+	};
+
 };
 }}
 
 std::istream & operator >> (std::istream &i,pylame::pcm::WAVFile &w);
-std::ostream & operator << (std::ostream &o,const pylame::pcm::WAVFile &w);
 
 #endif /* DEBUG_WAVFILE_HPP_ */

@@ -21,7 +21,7 @@ namespace pylame { namespace mp3 {
 
 class MP3Encoder {
 private:
-	pcm::PCMFile * data;
+	pcm::file_t data;
 	unsigned nSamples;
 	unsigned mp3Size;
 	unsigned char *mp3Out;
@@ -32,7 +32,7 @@ private:
 
 public:
 	MP3Encoder() : data(nullptr), nSamples(0), mp3Size(0), mp3Out(nullptr), gf(nullptr), output() {};
-	MP3Encoder(pcm::PCMFile *data_,const unsigned quality,const unsigned rate);
+	MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate);
 	virtual ~MP3Encoder();
 	
 	void transcode();

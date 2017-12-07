@@ -5,29 +5,34 @@
  *      Author: julianporter
  */
  
- #include "AIFFFile.hpp"
- #include "MP3Encoder.hpp"
- #include <iostream>
- #include <fstream>
-#include "base.hpp"
- 
- 
+#include "lamer.hpp"
+
+
+#define MODE AIFF
+
  int main(int argc,char *argv[]) {
  	
- 	try {
+	 	try {
+#if MODE == AIFF
  		std::cout << "Loading test.aiff" << std::endl;
- 		std::ifstream aiffFile("test.aiff",std::ifstream::binary);
-		pylame::pcm::AIFFFile aiff(aiffFile);
-		/*std::cout << aiff;
-		std::cout << "Creating LAME object" << std::endl;
-		MP3Encoder mp3(&wav,Quality::Good_Fast,BitRate::High);
-		std::cout << "About to transcode" << std::endl;
-		mp3.transcode();
-		std::cout << "Writing to test.mp3" << std::endl;
-		std::ofstream out("test.mp3",std::ofstream::binary);
-		out << mp3;
-		out.close();*/
+ 		std::ifstream aiff("test.aiff",std::ifstream::binary);
+		pylame::Transcode transcoder(aiff,5,48);
+		std::cout << "Writing to testaiff.mp3" << std::endl;
+		std::ofstream out("testaiff.mp3",std::ofstream::binary);
+		out << transcoder;
+		out.close();
 		std::cout << "Completed" << std::endl;
+#else
+		std::cout << "Loading test.wav" << std::endl;
+ 		std::ifstream wav("test.wav",std::ifstream::binary);
+		//std::cout << aiff;
+		pylame::Transcode transcoder(wav,5,48);
+		std::cout << "Writing to testwav.mp3" << std::endl;
+		std::ofstream out("testwav.mp3",std::ofstream::binary);
+		out << transcoder;
+		out.close();
+		std::cout << "Completed" << std::endl;
+#endif
 	}
 	catch(std::exception &e) {
 		std::cerr << e.what() << std::endl;

@@ -9,7 +9,7 @@
 #include "Member.hpp"
 
 
-const char* ModuleName="wav2mp3.rates";
+const char* ModuleName="pcm2mp3.rates";
  
 
 using _ = Member;

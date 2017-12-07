@@ -14,6 +14,18 @@
 
 namespace pylame { namespace pcm {
 
+
+
+struct PCMData {
+		unsigned nChannels;
+		unsigned nSamples;
+		std::shared_ptr<short> left;
+		std::shared_ptr<short> right;
+
+		PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it);
+		virtual ~PCMData() = default;
+	};
+
 class PCMFile {
 protected:
 protected:
@@ -28,34 +40,40 @@ protected:
 	unsigned sampleRate;
 	unsigned bytesPerSample;
 	unsigned nSamples;	// per channel
+	unsigned nBytesInFile;
+	unsigned dataSize;
+	unsigned bitsPerSample;
+
 public:
 
-	struct Data {
-		unsigned nChannels;
-		unsigned nSamples;
-		std::shared_ptr<short> left;
-		std::shared_ptr<short> right;
-		
-		Data(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it);
-	};
 
-	PCMFile() : nChannels(), sampleRate(), bytesPerSample(), nSamples() {};
+
+	PCMFile() : nChannels(), sampleRate(), bytesPerSample(), nSamples(),nBytesInFile(), dataSize(), bitsPerSample() {};
 	virtual ~PCMFile() = default;
 
 	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };
 	MPEG_mode mp3Mode() { return nChannels==1 ? MONO : JOINT_STEREO; };
 	virtual unsigned samplesPerSecond() const { return sampleRate; };
 	
-	virtual Data bytes() { throw MP3Error("Not implemented"); };
+	virtual PCMData bytes() { throw MP3Error("Not implemented"); };
 	virtual unsigned samplesPerChannel() const { return nSamples; };
 	virtual unsigned short nChans() const { return nChannels; };
-	virtual unsigned size() const { throw MP3Error("Not implemented"); };
-	virtual unsigned dSize() const { throw MP3Error("Not implemented"); };
-	virtual unsigned sampleSize() const { return 8*bytesPerSample; };
-	
+	virtual unsigned size() const { return nBytesInFile; };
+	virtual unsigned dSize() const { return dataSize; };
+	virtual unsigned sampleSize() const { return bitsPerSample; };
+	virtual unsigned sampleSizeInBytes() const { return bytesPerSample; };
+
+
+
 };
 
+using file_t = std::shared_ptr<PCMFile>;
+
 }}
+
+std::ostream & operator<<(std::ostream &o,const pylame::pcm::PCMFile &f);
+
+
 
 
 

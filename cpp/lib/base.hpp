@@ -19,6 +19,8 @@ namespace pylame {
 
 using data_t = std::vector<char>;
 using cdata_t = std::vector<unsigned char>;
+using iterator_t = data_t::iterator;
+using const_iterator_t = data_t::const_iterator;
 
 
 	class MP3Error : public std::exception {
@@ -41,6 +43,8 @@ using cdata_t = std::vector<unsigned char>;
 		Mono,
 		Stereo
 	};
+
+
 
 }
 

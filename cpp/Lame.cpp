@@ -15,13 +15,13 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
-#include "lib/base.hpp"
+#include "lib/lamer.hpp"
 
 
 static PyObject *mp3Error;
 
-const char* PackageName="wav2mp3";
-const char* ModuleName="wav2mp3._wav2mp3";
+const char* PackageName="pcm2mp3";
+const char* ModuleName="pcm2mp3._pcm2mp3";
 const char* ErrorName="MP3Error";
 
 const char * fullModuleName() {
@@ -53,9 +53,6 @@ static PyObject * mp3file(PyObject *self, PyObject *args, PyObject *keywds) {
 			throw PException(PyExc_TypeError,"API is transcode(infile,outfile,bitrate=64,quality=5)");
 		}
 		try {
-			if(!checkName(inFile,"wav")) throw pylame::MP3Error("Source file does not have .wav suffix");
-			if(!checkName(outFile,"mp3")) throw pylame::MP3Error("Destination file does not have .mp3 suffix");
-
 			std::ifstream wavFile(inFile,std::ifstream::binary);
 			pylame::Transcode transcode(wavFile,quality,bitRate);
 			std::ofstream out(outFile,std::ofstream::binary);
@@ -125,7 +122,7 @@ static struct PyModuleDef module = {
 
 
 
-PyMODINIT_FUNC PyInit__wav2mp3(void) {
+PyMODINIT_FUNC PyInit__pcm2mp3(void) {
 	PyObject *m = PyModule_Create(&module);
 	if(m==NULL) return NULL;
 	try {

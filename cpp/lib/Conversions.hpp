@@ -58,10 +58,10 @@ public:
 	operator double() { return (double)c.ld; };
 };
 
-uint16_t swap16(uint16_t in);
-unsigned swap32(unsigned in);
-unsigned swap32(uint16_t u1,uint16_t u2);
-std::pair<uint16_t,uint16_t> swap16(std::pair<uint16_t,uint16_t> in);
+uint16_t swap(uint16_t in);
+uint32_t swap(uint32_t in);
+uint32_t swap(uint16_t u1,uint16_t u2);
+std::pair<uint16_t,uint16_t> swap(std::pair<uint16_t,uint16_t> in);
 
 }}
 

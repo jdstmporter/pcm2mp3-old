@@ -15,20 +15,31 @@ namespace pylame { namespace pcm {
 
 class Iterator32 {
 public:
+	enum class Endianness {
+		BigEndian,
+		LittleEndian
+	};
 private:
-	data_t::const_iterator end;
-	data_t::const_iterator it;
+	const_iterator_t end;
+	const_iterator_t it;
+	bool littleEndian;
 	
 
 	Converter32 convertNext();
 	Converter64 convertNext64();
+
+	template <typename N>
+	N wrap(N n) {
+		return (littleEndian) ? n : swap(n);
+	};
 public:
-	Iterator32(const data_t &data) : end(data.end()), it(data.begin()) {};
-	Iterator32(const Iterator32 &o) : end(o.end), it(o.it) {};
+	Iterator32() : end(), it(), littleEndian(true) {};
+	Iterator32(const data_t &data,const Endianness &e = Endianness::LittleEndian) : end(data.end()), it(data.begin()), littleEndian(e==Endianness::LittleEndian) {};
+	Iterator32(const Iterator32 &o) : end(o.end), it(o.it), littleEndian(o.littleEndian) {};
 	virtual ~Iterator32() = default;
 	Iterator32 & operator=(const Iterator32 & o) = default;
 		
-	uint32_t nextInt() { return convertNext().u32; };
+	uint32_t nextInt() { return wrap(convertNext().u32); };
 	uint64_t nextInt64() { return convertNext64().u64; };
 	float nextFloat() { return convertNext().f; };
 	double nextDouble() { return convertNext64().d; };
