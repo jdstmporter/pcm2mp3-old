@@ -6,16 +6,73 @@
  */
  
 #include "AIFFData.hpp"
-#include <algorithm>
+#include "AIFFFile.hpp"
+#include <map>
  
- using namespace pylame::pcm::aiff;
- 
- std::ostream & operator<<(std::ostream &o,const Chunk &c) {
-	o << "Chunk of type '" << c.kind() << "' and length " << c.size();
+using namespace pylame::pcm::aiff;
+
+void Chunk::set(const PCMParameter &name ,const uint32_t arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+void Chunk::set(const PCMParameter &name ,const long double arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+void Chunk::set(const PCMParameter &name ,const std::string & arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+
+
+void Chunk::parse(const FormKind &fileType) {
+	auto it=iterator();
+	switch(ID) {
+	case ChunkKind::COMM: {
+		auto p1=it.nextPair();
+		auto p2=it.nextPair();
+		PARAM_SET(NumberOfChannels,uint32_t(p1.first));
+		PARAM_SET(NumberOfSamples,swap(p1.second,p2.first));
+		PARAM_SET(BitsPerSample,(uint32_t)p2.second);
+		PARAM_SET(SampleRate,it.nextLongDouble());
+		if(fileType._to_integral()==FormKind::AIFC) {
+			auto compression=named<CompressionKind>(it.nextString(),true);
+			PARAM_SET(Compression,compression._to_integral());
+		}
+		else PARAM_SET(Compression,CompressionKind::NONE);
+	}
+	break;
+	case ChunkKind::SSND: {
+		uint32_t d=size()-8;
+		PARAM_SET(DataSize,d);
+		PARAM_SET(Offset,it.nextInt());
+		PARAM_SET(BlockSize,it.nextInt());
+		if(it.size()!=d) throw MP3Error("Data size error");
+	}
+	break;
+	case ChunkKind::FVER: {
+		auto ts=it.nextInt();
+		if(ts!=Chunk::AIFCVersion1TimeStamp) throw MP3Error("Invalid AIFC version timestamp");
+		PARAM_SET(TimeStamp,ts);
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+
+std::ostream & operator<<(std::ostream &o,const ChunkKind &kind) {
+	o << nameOf(kind);
 	return o;
 }
 
- std::vector<Chunk> Form::operator[](const std::string &ID) {
+ std::ostream & operator<<(std::ostream &o,const Chunk &c) {
+ 	o << "Chunk of type '" << c.kind() << "' and length " << c.size();
+ 	return o;
+ }
+
+ std::vector<Chunk> Form::all(const ChunkKind &ID) const {
  	auto begin=chunks.lower_bound(ID);
  	auto end=chunks.upper_bound(ID);
  	if(begin==end) throw MP3Error("No instances of chunk kind found");
@@ -24,13 +81,20 @@
  	return c;
  }
 
+ Chunk Form::first(const ChunkKind &kind) const {
+	 auto chunks=all(kind);
+	 if(chunks.size()!=1) throw MP3Error("Anomalous AIFF file with multiple chunks");
+	 return *chunks.begin();
+ }
+
  bool Form::nextChunk() {
  	try {
- 		auto idx=it.nextString();
+ 		auto idx=named<ChunkKind>(it.nextString());
  		auto n=it.nextInt();
  		data_t d(n,0);
  		it.getN(n,d.data());
  		Chunk c(idx,d);
+ 		c.parse(fileType);
  		chunks.insert(std::make_pair(idx,c));
  		return true;
  	}
@@ -40,21 +104,29 @@
 
  }
 
-
-
  void Form::walk() {
  	auto s=it.nextString();
- 	if(s!="FORM") throw MP3Error("File is not AIFF - missing FORM");
+ 	if(s!="FORM") throw MP3Error("File is not AIFF / AIFC - missing FORM");
  	len=it.nextInt();
  	auto t=it.nextString();
  	std::cout << "Length = " <<  std::hex << len << std::dec << std::endl;
  	std::cout << "Type string = '" << t << "'" << std::endl;
- 	if(t=="AIFF") fileType=Type::AIFF;
- 	else if(t=="AIFC") fileType=Type::AIFC;
- 	else throw MP3Error("Unrecognised file type");
+ 	try {
+ 		fileType=FormKind::_from_string(t.c_str());
+ 	}
+ 	catch(...) {
+ 		throw MP3Error("Unrecognised file type");
+ 	}
 
  	while(nextChunk()) {};
- 	std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.second << std::endl; });
+ }
+
+ pylame::pcm::Parameter Form::get(const PCMParameter &name) const {
+	 for(ChunkKind value : ChunkKind::_values()) {
+		 auto chunk=first(value);
+		 if(chunk.has(name)) return chunk[name];
+	 }
+	 throw MP3Error("No such parameter");
  }
 
 

@@ -11,10 +11,11 @@
 #include "Iterator32.hpp"
 #include <lame/lame.h>
 #include "base.hpp"
+#include "property.hpp"
+
+
 
 namespace pylame { namespace pcm {
-
-
 
 struct PCMData {
 		unsigned nChannels;
@@ -26,8 +27,7 @@ struct PCMData {
 		virtual ~PCMData() = default;
 	};
 
-class PCMFile {
-protected:
+class PCMFile : public ParameterSet {
 protected:
 	enum class DataFormat : uint16_t {
 		PCM = 1,
@@ -35,33 +35,25 @@ protected:
 		ALaw = 6,
 		ULaw = 7
 	};
-
-	unsigned short nChannels;
-	unsigned sampleRate;
-	unsigned bytesPerSample;
-	unsigned nSamples;	// per channel
-	unsigned nBytesInFile;
-	unsigned dataSize;
-	unsigned bitsPerSample;
+	unsigned fileSize;
 
 public:
-
-
-
-	PCMFile() : nChannels(), sampleRate(), bytesPerSample(), nSamples(),nBytesInFile(), dataSize(), bitsPerSample() {};
+	PCMFile() :   fileSize() {};
 	virtual ~PCMFile() = default;
 
-	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };
-	MPEG_mode mp3Mode() { return nChannels==1 ? MONO : JOINT_STEREO; };
-	virtual unsigned samplesPerSecond() const { return sampleRate; };
+	virtual unsigned bitRate() { return nChannels()*sampleRate()*bytesPerSample()*8; };
+	MPEG_mode mp3Mode() { return nChannels()==1 ? MONO : JOINT_STEREO; };
+	virtual unsigned sampleRate() const { return PARAM_GET(SampleRate,uint32_t); };
 	
 	virtual PCMData bytes() { throw MP3Error("Not implemented"); };
-	virtual unsigned samplesPerChannel() const { return nSamples; };
-	virtual unsigned short nChans() const { return nChannels; };
-	virtual unsigned size() const { return nBytesInFile; };
-	virtual unsigned dSize() const { return dataSize; };
-	virtual unsigned sampleSize() const { return bitsPerSample; };
-	virtual unsigned sampleSizeInBytes() const { return bytesPerSample; };
+	virtual unsigned nSamples() const { return PARAM_GET(NumberOfSamples,uint32_t); };
+	unsigned nChannels() const { return PARAM_GET(NumberOfChannels,uint32_t); };
+	virtual unsigned size() const { return fileSize; };
+	virtual unsigned dataSize() const { return PARAM_GET(DataSize,uint32_t); };
+	virtual unsigned bitsPerSample() const { return PARAM_GET(BitsPerSample,uint32_t); };
+	virtual unsigned bytesPerSample() const { return (bitsPerSample()+7)/8; };
+
+	bool wholeBytes() const { return (bitsPerSample()%8)==0; };
 
 
 

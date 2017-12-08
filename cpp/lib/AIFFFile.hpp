@@ -22,7 +22,7 @@ namespace pylame { namespace pcm {
 
 
 class AIFFFile: public PCMFile {
-
+	friend class aiff::Chunk;
 private:
 	data_t file;
 	aiff::Form form;
@@ -30,14 +30,13 @@ private:
 	unsigned offset;
 	unsigned blocksize;
 	
-	void commChunk(const aiff::Chunk &f);
-	void soundChunk(const aiff::Chunk &f);
-	
 	void parseHeader();
+
 
 	
 protected:
 	
+	virtual Parameter get(const PCMParameter &name) const { return form[name]; };
 	
 	
 public:
@@ -49,6 +48,7 @@ public:
 
 	static bool isInstance(const data_t &d);
 	static bool isInstance(std::istream &stream) ;
+
 };
 
 }}

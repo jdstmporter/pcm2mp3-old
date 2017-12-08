@@ -41,57 +41,22 @@ void AIFFFile::parseHeader() {
     Iterator32 it(file,Iterator32::Endianness::BigEndian);
     form=aiff::Form(it);
     form.walk();
-    nBytesInFile=form.bytesInFile();
-    
-    auto common=form["COMM"];
-    if(common.size()!=1) throw MP3Error("Anomalous AIFF file with multiple COMM chunks");
-    auto comm=*common.begin();
-    std::cout << "Processing COMM block" << std::endl;
-    commChunk(comm);
-    
-    auto ssnds=form["SSND"];
-    if(ssnds.size()!=1) throw MP3Error("Anomalous AIFF file with multiple SSND chunks");
-	auto ssnd=*ssnds.begin();
-	 std::cout << "PROCESSING SSND CHUNK" << std::endl;
-    soundChunk(ssnd);
-}
-
-void AIFFFile::commChunk(const aiff::Chunk &comm) {
-	
-
-    auto itc=comm.iterator();
-    
-    auto p1=itc.nextPair();
-    auto p2=itc.nextPair();
-    nChannels=(unsigned)p1.first;
-    nSamples=swap(p1.second,p2.first);
-    bitsPerSample=(unsigned)p2.second;
-    sampleRate=(unsigned)itc.nextLongDouble();
-    
-
-    
+    //nBytesInFile=form.fileSize();
     
 }
 
-void AIFFFile::soundChunk(const aiff::Chunk &ssnd) {
-	 
-	 	dataSize=ssnd.size()-8;
-	 	auto it=ssnd.iterator();
-	 	offset=it.nextInt();
-	 	blocksize=it.nextInt();
-	 	if(it.size()!=dataSize) throw MP3Error("Data size error");
-}
+
+
+
 
 PCMData AIFFFile::bytes() {
 	if(offset!=0 || blocksize!=0) throw MP3Error("Cannot enumerate blocked data sets");
-	auto qr=std::div(bitsPerSample,8);
-	if(qr.rem!=0) throw MP3Error("Cannot enumerate non-integral byte samples");
-	bytesPerSample=qr.quot;
+	if(!wholeBytes()) throw MP3Error("Cannot enumerate non-integral byte samples");
 
-	aiff::Chunk ssnd=*form["SSND"].begin();
+	aiff::Chunk ssnd=form.first(aiff::ChunkKind::SSND);
 	auto it=ssnd.iterator();
 	it.skip(2);
-	return PCMData(nChannels,nSamples,it);
+	return PCMData(nChannels(),nSamples(),it);
 }
 
 
