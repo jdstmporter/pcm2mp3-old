@@ -11,6 +11,7 @@
 #include "base.hpp"
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
+#include <map>
 
 namespace pylame { namespace pcm {
 
@@ -19,14 +20,18 @@ friend std::ostream & operator << (std::ostream &o,const WAVFile &w);
 
 private:
 	data_t file;
-	std::pair<long,long> clip();
 	void parseHeader();
+	std::map<PCMParameter,Parameter> parameters;
 	
 protected:
 
 	
 	DataFormat format;
 	static DataFormat convertFormat(const uint16_t);
+	virtual void set(const PCMParameter &name ,const uint32_t arg);
+	virtual void set(const PCMParameter &name ,const long double arg);
+	virtual void set(const PCMParameter &name ,const std::string & arg);
+
 public:
 	
 	WAVFile(const data_t &file_);

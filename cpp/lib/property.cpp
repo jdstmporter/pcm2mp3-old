@@ -7,8 +7,3 @@
 
 #include "property.hpp"
 
-namespace pylame {
-namespace pcm {
-
-} /* namespace pcm */
-} /* namespace pylame */

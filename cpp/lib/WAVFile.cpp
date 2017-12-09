@@ -11,6 +11,19 @@
 
 namespace pylame { namespace pcm {
 
+void WAVFile::set(const PCMParameter &name ,const uint32_t arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+void WAVFile::set(const PCMParameter &name ,const long double arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+void WAVFile::set(const PCMParameter &name ,const std::string & arg) {
+	Parameter p(name,arg);
+	parameters[p.name]=p;
+}
+
 
 WAVFile::DataFormat WAVFile::convertFormat(const uint16_t value) {
 	switch(value) {
@@ -31,7 +44,7 @@ void WAVFile::parseHeader() {
 	Iterator32 it(file);
 	auto riff=it.nextString();
 	if (riff!="RIFF") throw MP3Error("RIFF tag not present");
-	nBytesInFile=it.nextInt();
+	fileSize=it.nextInt();
 	auto wave=it.nextString();
 	if (wave!="WAVE") throw MP3Error("WAVE tag not present");
 	auto fmt=it.nextString();
@@ -42,22 +55,20 @@ void WAVFile::parseHeader() {
 	
 	auto fmtCh=it.nextPair();
 	format=WAVFile::convertFormat(fmtCh.first);
-	nChannels=fmtCh.second;
+	PARAM_SET(NumberOfChannels,uint32_t(fmtCh.second));
 	
-	sampleRate=it.nextInt();
+	PARAM_SET(SampleRate,(long double)it.nextInt());
 	auto byteRate=it.nextInt();
 	auto alignBits=it.nextPair();
-	bitsPerSample=alignBits.second;
-	if((bitsPerSample&7) != 0) throw MP3Error("Bad bits per sample");
-	bytesPerSample=bitsPerSample/8;
-	if(alignBits.first!= bytesPerSample*nChannels) throw MP3Error("Block align check failed");
-	if(byteRate != sampleRate*bytesPerSample*nChannels) throw MP3Error("Byte rate check failed");
+	PARAM_SET(BitsPerSample,(uint32_t)alignBits.second);
+
+	if(alignBits.first!= bytesPerSample()*nChannels()) throw MP3Error("Block align check failed");
+	if(byteRate != sampleRate()*bytesPerSample()*nChannels()) throw MP3Error("Byte rate check failed");
 	
 	auto d=it.nextString();
 	if (d!="data") throw MP3Error("DATA tag not present");
-	dataSize=it.nextInt();
-	nSamples=dataSize/(nChannels*bytesPerSample);
-	
+	PARAM_SET(DataSize,it.nextInt());
+	PARAM_SET(NumberOfSamples,dataSize()/(nChannels()*bytesPerSample()));
 }
 
 WAVFile::WAVFile(const data_t &file_) : PCMFile(), file(file_) {
@@ -79,10 +90,7 @@ WAVFile::WAVFile(std::istream &stream) {
     parseHeader();
 }
 
-std::pair<long,long> WAVFile::clip() {
-	long b=1<<(8*bytesPerSample);
-	return std::make_pair<long,long>(-b,b-1);
-}
+
 
 
 PCMData WAVFile::bytes() {
@@ -91,7 +99,7 @@ PCMData WAVFile::bytes() {
 	Iterator32 it(file);
 	it.skip(11);	// skip over header
 	
-	return PCMData(nChannels,nSamples,it);
+	return PCMData(nChannels(),nSamples(),it);
 }
 
 }}

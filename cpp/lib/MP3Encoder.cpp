@@ -16,12 +16,12 @@ unsigned MP3Encoder::mp3SizeCalc(unsigned n) {
 
 
 MP3Encoder::MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate) :
-	data(data_), nSamples(data->samplesPerChannel()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
+	data(data_), nSamples(data->nSamples()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
 		
 	gf = lame_init();
 	if(gf==nullptr) throw MP3Error("Cannot initialise LAME transcoder");
-	lame_set_num_channels(gf,data->nChans());
-	lame_set_in_samplerate(gf,data->samplesPerSecond());
+	lame_set_num_channels(gf,data->nChannels());
+	lame_set_in_samplerate(gf,data->sampleRate());
 	lame_set_brate(gf,rate);
 	lame_set_mode(gf,data->mp3Mode());
 	lame_set_quality(gf,quality);
