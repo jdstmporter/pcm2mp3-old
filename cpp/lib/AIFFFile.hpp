@@ -38,7 +38,7 @@ private:
 	
 protected:
 	
-	
+	DataFormat format;
 	
 public:
 	AIFFFile(const data_t &file_);

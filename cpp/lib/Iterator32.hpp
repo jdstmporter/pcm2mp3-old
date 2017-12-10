@@ -25,8 +25,7 @@ private:
 	bool littleEndian;
 	
 
-	Converter32 convertNext();
-	Converter64 convertNext64();
+
 
 	template <typename N>
 	N wrap(N n) {
@@ -38,6 +37,9 @@ public:
 	Iterator32(const Iterator32 &o) : end(o.end), it(o.it), littleEndian(o.littleEndian) {};
 	virtual ~Iterator32() = default;
 	Iterator32 & operator=(const Iterator32 & o) = default;
+
+	Converter32 convertNext();
+	Converter64 convertNext64();
 		
 	uint32_t nextInt() { return wrap(convertNext().u32); };
 	uint64_t nextInt64() { return convertNext64().u64; };

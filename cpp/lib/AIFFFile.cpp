@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "Conversions.hpp"
 #include <cstdlib>
+#include <locale>
 using namespace pylame::pcm;
 
 
@@ -67,10 +68,19 @@ void AIFFFile::commChunk(const aiff::Chunk &comm) {
     nSamples=swap(p1.second,p2.first);
     bitsPerSample=(unsigned)p2.second;
     sampleRate=(unsigned)itc.nextLongDouble();
-    
-
-    
-    
+    if(form.isAIFC()) {
+    	auto f=itc.convertNext();
+    	char bytes[4];
+    	std::locale l;
+    	for(auto i=0;i<4;i++) bytes[i]=std::tolower(f.bytes[i],l);
+    	std::string fmt(bytes);
+    	if(fmt=="none" || fmt=="sowt") format==DataFormat::PCM;
+    	else if(fmt=="fl32" || fmt=="fl64") format=DataFormat::IEEEFloat;
+    	else if(fmt=="ulaw") format==DataFormat::ULaw;
+    	else if(fmt=="alaw") format==DataFormat::ALaw;
+    	else MP3Error("Unknown AIFC data format");
+    }
+    else format==DataFormat::PCM;
 }
 
 void AIFFFile::soundChunk(const aiff::Chunk &ssnd) {
@@ -83,6 +93,7 @@ void AIFFFile::soundChunk(const aiff::Chunk &ssnd) {
 }
 
 PCMData AIFFFile::bytes() {
+	if(format!=DataFormat::PCM) throw MP3Error("Can only enumerate PCM files");
 	if(offset!=0 || blocksize!=0) throw MP3Error("Cannot enumerate blocked data sets");
 	auto qr=std::div(bitsPerSample,8);
 	if(qr.rem!=0) throw MP3Error("Cannot enumerate non-integral byte samples");

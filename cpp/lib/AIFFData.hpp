@@ -58,7 +58,7 @@ public:
 	
 	void walk();
 	
-	
+	bool isAIFC() const { return fileType==Type::AIFC; };
 	unsigned size() const { return chunks.size(); };
 	unsigned bytesInFile() const { return len; }
 	bool has(const std::string &key) const { return chunks.count(key)>0; };
