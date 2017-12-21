@@ -37,24 +37,25 @@ using const_iterator_t = data_t::const_iterator;
 		
 	};
 	
-
+	enum class DataFormat : uint16_t {
+			PCM = 1,
+			IEEEFloat = 3,
+			ALaw = 6,
+			ULaw = 7
+	};
 
 	enum class Mode  {
-		Mono,
-		Stereo
+		Mono,Stereo
 	};
 
 	enum class FileType {
-					AIFF,
-					AIFC,
-					RIFF,
-					Other
-				};
+		AIFF,AIFC,RIFF,Other
+	};
 
-	enum class Endianness : int {
-			BigEndian = 1,
-			LittleEndian = 2
-		};
+	enum class Endianness : unsigned {
+		BigEndian = 1,
+		LittleEndian = 2
+	};
 
 
 }

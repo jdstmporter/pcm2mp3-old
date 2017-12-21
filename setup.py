@@ -20,8 +20,8 @@ metadata=configuration['metadata']
 
 package=metadata['name']
 
-libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'AIFFData.cpp',
-        'base.cpp', 'Conversions.cpp', 'Iterator32.cpp','transcoder.cpp']
+libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp',
+        'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
 qsrc=['Member.cpp','Quality.cpp']

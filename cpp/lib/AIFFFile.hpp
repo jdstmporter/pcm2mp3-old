@@ -8,11 +8,9 @@
 #ifndef AIFFFILE_HPP_
 #define AIFFFILE_HPP_
 
-
+#include "base.hpp"
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
-#include "base.hpp"
-#include "AIFFData.hpp"
 
 namespace pylame { namespace pcm {
 
@@ -22,23 +20,20 @@ namespace pylame { namespace pcm {
 
 
 class AIFFFile: public PCMFile {
-
+	using Iterator=Iterator32<Endianness::BigEndian>;
+	using Form=DataForm<Endianness::BigEndian>;
+	using Chunk=DataChunk<Endianness::BigEndian>;
 private:
-	data_t file;
-	aiff::Form form;
-	Iterator32 iterator;
 	unsigned offset;
 	unsigned blocksize;
+	Form form;
 	
-	void commChunk(const aiff::Chunk &f);
-	void soundChunk(const aiff::Chunk &f);
+	void commChunk(const Chunk &f);
+	void soundChunk(const Chunk &f);
 	
-	void parseHeader();
+	void parseForm();
 
-	
-protected:
-	
-	DataFormat format;
+
 	
 public:
 	AIFFFile(const data_t &file_);
@@ -46,7 +41,7 @@ public:
 	virtual ~AIFFFile() = default;
 
 	virtual PCMData bytes();
-
+	virtual FileType fileType() const { return form.fileType(); };
 	static bool isInstance(const data_t &d);
 	static bool isInstance(std::istream &stream) ;
 };

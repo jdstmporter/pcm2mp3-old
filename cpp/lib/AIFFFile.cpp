@@ -16,34 +16,25 @@ using namespace pylame::pcm;
 
 
 
-AIFFFile::AIFFFile(const data_t &file_) : PCMFile(), file(file_) {
-	parseHeader();
+AIFFFile::AIFFFile(const data_t &file_) : PCMFile(file_) {
+	parseForm();
 }
 
 
 
-AIFFFile::AIFFFile(std::istream &stream) : file(), iterator() {
-	stream.seekg (0, stream.end);
-    auto length = stream.tellg();
-    stream.seekg (0, stream.beg);
-    
-    file.assign(length,0);
-    auto c=file.data();
-    int pos=0;
-    while(pos<length) {
-    	stream.read(c+pos,1024);
-    	pos+=stream.gcount();
-    }
-    parseHeader();
-
+AIFFFile::AIFFFile(std::istream &stream) : PCMFile(stream) {
+    parseForm();
 }
 
-void AIFFFile::parseHeader() {
-    Iterator32<Endianness::BigEndian> it(file);
-    form=aiff::Form(it);
-    form.walk();
-    nBytesInFile=form.bytesInFile();
-    
+void AIFFFile::parseForm() {
+	Iterator it(file);
+	form=Form(it);
+	form.walk();
+	nBytesInFile=form.bytesInFile();
+
+	auto f=fileType();
+	if(f!=FileType::AIFF && f!=FileType::AIFC) throw MP3Error("Not AIFF file");
+
     auto common=form["COMM"];
     if(common.size()!=1) throw MP3Error("Anomalous AIFF file with multiple COMM chunks");
     auto comm=*common.begin();
@@ -57,9 +48,8 @@ void AIFFFile::parseHeader() {
     soundChunk(ssnd);
 }
 
-void AIFFFile::commChunk(const aiff::Chunk &comm) {
+void AIFFFile::commChunk(const Chunk &comm) {
 	
-
     auto itc=comm.iterator();
     
     auto p1=itc.nextPair();
@@ -74,16 +64,16 @@ void AIFFFile::commChunk(const aiff::Chunk &comm) {
     	std::locale l;
     	for(auto i=0;i<4;i++) bytes[i]=std::tolower(f.bytes[i],l);
     	std::string fmt(bytes);
-    	if(fmt=="none" || fmt=="sowt") format==DataFormat::PCM;
+    	if(fmt=="none" || fmt=="sowt") format=DataFormat::PCM;
     	else if(fmt=="fl32" || fmt=="fl64") format=DataFormat::IEEEFloat;
-    	else if(fmt=="ulaw") format==DataFormat::ULaw;
-    	else if(fmt=="alaw") format==DataFormat::ALaw;
+    	else if(fmt=="ulaw") format=DataFormat::ULaw;
+    	else if(fmt=="alaw") format=DataFormat::ALaw;
     	else MP3Error("Unknown AIFC data format");
     }
-    else format==DataFormat::PCM;
+    else format=DataFormat::PCM;
 }
 
-void AIFFFile::soundChunk(const aiff::Chunk &ssnd) {
+void AIFFFile::soundChunk(const Chunk &ssnd) {
 	 
 	 	dataSize=ssnd.size()-8;
 	 	auto it=ssnd.iterator();
@@ -99,10 +89,10 @@ PCMData AIFFFile::bytes() {
 	if(qr.rem!=0) throw MP3Error("Cannot enumerate non-integral byte samples");
 	bytesPerSample=qr.quot;
 
-	aiff::Chunk ssnd=*form["SSND"].begin();
+	Chunk ssnd=*form["SSND"].begin();
 	auto it=ssnd.iterator();
 	it.skip(2);
-	return PCMData(nChannels,nSamples,it);
+	return PCMData::make(nChannels,nSamples,it);
 }
 
 

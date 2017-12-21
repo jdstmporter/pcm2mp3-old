@@ -12,7 +12,7 @@
 namespace pylame { namespace pcm {
 
 
-WAVFile::DataFormat WAVFile::convertFormat(const uint16_t value) {
+DataFormat WAVFile::convertFormat(const uint16_t value) {
 	switch(value) {
 		case 1:
 		return DataFormat::PCM;
@@ -27,56 +27,55 @@ WAVFile::DataFormat WAVFile::convertFormat(const uint16_t value) {
 	}	
 };
 
-void WAVFile::parseHeader() {
-	Iterator32 it(file);
-	auto riff=it.nextString();
-	if (riff!="RIFF") throw MP3Error("RIFF tag not present");
-	nBytesInFile=it.nextInt();
-	auto wave=it.nextString();
-	if (wave!="WAVE") throw MP3Error("WAVE tag not present");
-	auto fmt=it.nextString();
-	if (fmt!="fmt ") throw MP3Error("FMT tag not present");
-	auto formatLength=it.nextInt();
-	if (formatLength!=16) throw MP3Error("Format block length wrong");
-	
-	
-	auto fmtCh=it.nextPair();
-	format=WAVFile::convertFormat(fmtCh.first);
+void WAVFile::fmtChunk(const Chunk &chunk) {
+	if(chunk.size()!=16) throw MP3Error("Format block length wrong");
+	auto itc=chunk.iterator();
+
+	auto fmtCh=itc.nextPair();
+	format=convertFormat(fmtCh.first);
 	nChannels=fmtCh.second;
-	
-	sampleRate=it.nextInt();
-	auto byteRate=it.nextInt();
-	auto alignBits=it.nextPair();
+
+	sampleRate=itc.nextInt();
+	auto byteRate=itc.nextInt();
+	auto alignBits=itc.nextPair();
 	bitsPerSample=alignBits.second;
 	if((bitsPerSample&7) != 0) throw MP3Error("Bad bits per sample");
 	bytesPerSample=bitsPerSample/8;
 	if(alignBits.first!= bytesPerSample*nChannels) throw MP3Error("Block align check failed");
 	if(byteRate != sampleRate*bytesPerSample*nChannels) throw MP3Error("Byte rate check failed");
-	
-	auto d=it.nextString();
-	if (d!="data") throw MP3Error("DATA tag not present");
-	dataSize=it.nextInt();
+};
+
+void WAVFile::dataChunk(const Chunk &chunk) {
+	dataSize=chunk.size();
 	nSamples=dataSize/(nChannels*bytesPerSample);
-	
 }
 
-WAVFile::WAVFile(const data_t &file_) : PCMFile(), file(file_) {
-	parseHeader();
+void WAVFile::parseForm() {
+	Iterator it(file);
+	form=Form(it);
+	form.walk();
+	nBytesInFile=form.bytesInFile();
+
+	if(fileType()!=FileType::RIFF) throw MP3Error("Not WAV file");
+	auto fmts=form["fmt "];
+	if(fmts.size()!=1) throw MP3Error("Anomalous WAV file with multiple FMT chunks");
+	auto fmt=*fmts.begin();
+	std::cout << "Processing FMT chunk" << std::endl;
+	fmtChunk(fmt);
+
+	auto datas=form["DATA"];
+	if(datas.size()!=1) throw MP3Error("Anomalous WAV file with multiple DATA chunks");
+	auto data=*datas.begin();
+	std::cout << "PROCESSING SSND CHUNK" << std::endl;
+	dataChunk(data);
 }
 
-WAVFile::WAVFile(std::istream &stream) {
-	stream.seekg (0, stream.end);
-    auto length = stream.tellg();
-    stream.seekg (0, stream.beg);
-    
-    file=data_t(length,0);
-    auto c=file.data();
-    int pos=0;
-    while(pos<length) {
-    	stream.read(c+pos,1024);
-    	pos+=stream.gcount();
-    }
-    parseHeader();
+WAVFile::WAVFile(const data_t &file_) : PCMFile(file_) {
+	parseForm();
+}
+
+WAVFile::WAVFile(std::istream &stream) : PCMFile(stream) {
+    parseForm();
 }
 
 std::pair<long,long> WAVFile::clip() {
@@ -88,11 +87,30 @@ std::pair<long,long> WAVFile::clip() {
 PCMData WAVFile::bytes() {
 	if(format!=DataFormat::PCM) throw MP3Error("Can only enumerate PCM files");
 	
-	Iterator32 it(file);
-	it.skip(11);	// skip over header
-	
-	return PCMData(nChannels,nSamples,it);
+	auto data=*form["DATA"].begin();
+	auto it=data.iterator();
+	it.skip(2);	// skip over header
+	return PCMData::make(nChannels,nSamples,it);
 }
+
+bool WAVFile::isInstance(const data_t &d) {
+		try {
+			WAVFile w(d);
+			return true;
+		}
+		catch(...) {
+			return false;
+		}
+	};
+bool WAVFile::isInstance(std::istream &stream) {
+		try {
+			WAVFile w(stream);
+			return true;
+		}
+		catch(...) {
+			return false;
+		}
+	};
 
 }}
 

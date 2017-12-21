@@ -15,48 +15,31 @@
 namespace pylame { namespace pcm {
 
 class WAVFile : public PCMFile {
+	using Iterator=Iterator32<Endianness::LittleEndian>;
+	using Form=DataForm<Endianness::LittleEndian>;
+	using Chunk=DataChunk<Endianness::LittleEndian>;
 friend std::ostream & operator << (std::ostream &o,const WAVFile &w);
 
 private:
-	data_t file;
+	Form form;
 	std::pair<long,long> clip();
-	void parseHeader();
+	void parseForm();
+	void fmtChunk(const Chunk &chunk);
+	void dataChunk(const Chunk &chunk);
 	
 protected:
-
-	
-	DataFormat format;
 	static DataFormat convertFormat(const uint16_t);
 public:
 	
 	WAVFile(const data_t &file_);
 	WAVFile(std::istream & stream);
-	
-	
-	//WAVFile(const Mode & mode_,const SampleRate & rate_,int sampleSize) : PCMFile(mode_,rate_,sampleSize) {};
 	virtual ~WAVFile() = default;
 
 	
 	virtual PCMData bytes(); // Gives interleaved data
-	
-	static bool isInstance(const data_t &d) {
-		try {
-			WAVFile w(d);
-			return true;
-		}
-		catch(...) {
-			return false;
-		}
-	};
-	static bool isInstance(std::istream &stream) {
-		try {
-			WAVFile w(stream);
-			return true;
-		}
-		catch(...) {
-			return false;
-		}
-	};
+	virtual FileType fileType() const { return form.fileType(); };
+	static bool isInstance(const data_t &d);
+	static bool isInstance(std::istream &stream);
 
 };
 }}
