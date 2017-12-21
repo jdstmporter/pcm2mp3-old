@@ -39,7 +39,7 @@ AIFFFile::AIFFFile(std::istream &stream) : file(), iterator() {
 }
 
 void AIFFFile::parseHeader() {
-    Iterator32 it(file,Iterator32::Endianness::BigEndian);
+    Iterator32<Endianness::BigEndian> it(file);
     form=aiff::Form(it);
     form.walk();
     nBytesInFile=form.bytesInFile();

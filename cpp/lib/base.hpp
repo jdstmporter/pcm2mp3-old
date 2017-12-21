@@ -44,6 +44,17 @@ using const_iterator_t = data_t::const_iterator;
 		Stereo
 	};
 
+	enum class FileType {
+					AIFF,
+					AIFC,
+					RIFF,
+					Other
+				};
+
+	enum class Endianness : int {
+			BigEndian = 1,
+			LittleEndian = 2
+		};
 
 
 }

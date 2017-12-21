@@ -19,9 +19,7 @@ Converter80::Converter80(data_t::const_iterator &it) {
 	for(auto i=0;i<10;i++) bytes[9-i]=*it++;
 }
 
-Converter80::Converter80(Iterator32 &it) {
-	for(auto i=0;i<10;i++) bytes[9-i]=it.get();
-}
+
 
 Converter80::Converter80(char *p) {
 	for(auto i=0;i<10;i++) bytes[9-i]=p[i];

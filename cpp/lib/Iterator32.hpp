@@ -10,52 +10,85 @@
 
 #include "base.hpp"
 #include "Conversions.hpp"
+#include <iomanip>
 
 namespace pylame { namespace pcm {
 
+
+
+template<Endianness E>
 class Iterator32 {
-public:
-	enum class Endianness {
-		BigEndian,
-		LittleEndian
-	};
 private:
 	const_iterator_t end;
 	const_iterator_t it;
-	bool littleEndian;
-	
-
-
 
 	template <typename N>
 	N wrap(N n) {
-		return (littleEndian) ? n : swap(n);
+		return (E == Endianness::LittleEndian) ? n : swap(n);
 	};
 public:
-	Iterator32() : end(), it(), littleEndian(true) {};
-	Iterator32(const data_t &data,const Endianness &e = Endianness::LittleEndian) : end(data.end()), it(data.begin()), littleEndian(e==Endianness::LittleEndian) {};
-	Iterator32(const Iterator32 &o) : end(o.end), it(o.it), littleEndian(o.littleEndian) {};
+	Iterator32() : end(), it() {};
+	Iterator32(const data_t &data) : end(data.end()), it(data.begin()) {};
+	Iterator32(const Iterator32<E> &o) : end(o.end), it(o.it) {};
 	virtual ~Iterator32() = default;
 	Iterator32 & operator=(const Iterator32 & o) = default;
 
-	Converter32 convertNext();
-	Converter64 convertNext64();
+	Converter32 convertNext() {
+		Converter32 c;
+		for(auto i=0;i<4;i++) {
+			if(it==end) throw MP3Error("Overrun end of file");
+			c.bytes[i]=*it;
+			it++;
+		}
+		return c;
+	}
+	Converter64 convertNext64() {
+		Converter64 c;
+		for(auto i=0;i<8;i++) {
+			if(it==end) throw MP3Error("Overrun end of file");
+			c.bytes[i]=*it;
+			it++;
+		}
+		return c;
+	}
 		
 	uint32_t nextInt() { return wrap(convertNext().u32); };
 	uint64_t nextInt64() { return convertNext64().u64; };
 	float nextFloat() { return convertNext().f; };
 	double nextDouble() { return convertNext64().d; };
-	long double nextLongDouble();
-	std::string nextString() ;
-	std::pair<uint16_t,uint16_t> nextPair() ;
+	long double nextLongDouble() {
+		Float80 f(it);
+		return (long double)f;
+	}
+	std::string nextString() {
+		char c[5]={0,0,0,0,0};
+		for(auto i=0;i<4;i++) {
+			if(it==end) throw MP3Error("Overrun end of file");
+			c[i]=char(*it++);
+		}
+		return std::string(c);
+	}
+	std::pair<uint16_t,uint16_t> nextPair() {
+		auto a=convertNext().u16;
+		return wrap(std::make_pair(a[0],a[1]));
+	}
 
 
 	void skip(const unsigned n) { it+=(4*n); };
 	bool finished() const { return it==end; };
 
 
-	void getN(const unsigned n,char *d);
-	char get();
+	void getN(const unsigned n,char *data) {
+		for(unsigned i=0;i<n;i++) {
+			if(it==end) throw MP3Error("Overrun end of file");
+			data[i]=*it;
+			it++;
+		}
+	}
+	char get() {
+		if(it==end) throw MP3Error("Overrun end of file");
+		return *it++;
+	}
 
 
 

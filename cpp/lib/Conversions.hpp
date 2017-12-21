@@ -13,7 +13,6 @@
 namespace pylame { namespace pcm {
 
 
-class Iterator32;
 
 union Converter32 {
 		uint32_t u32;
@@ -29,6 +28,7 @@ union Converter32 {
 			double d;
 	};
 
+
 union Converter80 {
 		char bytes[10];
 		long double ld;
@@ -36,7 +36,6 @@ union Converter80 {
 		
 		Converter80();
 		Converter80(data_t::const_iterator &);
-		Converter80(Iterator32 &);
 		Converter80(char *);
 		
 };
@@ -51,7 +50,6 @@ private:
 public: 
 	Float80() : c() {};
 	Float80(data_t::const_iterator &it) : c(it) {};
-	Float80(Iterator32 &it) : c(it) {};
 	Float80(char *p) : c(p) {};
 	
 	operator long double() { return c.ld; };

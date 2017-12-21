@@ -36,6 +36,7 @@ protected:
 		ULaw = 7
 	};
 
+
 	unsigned short nChannels;
 	unsigned sampleRate;
 	unsigned bytesPerSample;
@@ -43,6 +44,7 @@ protected:
 	unsigned nBytesInFile;
 	unsigned dataSize;
 	unsigned bitsPerSample;
+	DataFormat format;
 
 public:
 
