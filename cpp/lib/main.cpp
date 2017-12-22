@@ -8,12 +8,12 @@
 #include "lamer.hpp"
 
 
-#define MODE AIFF
+#define MODE WAV
 
  int main(int argc,char *argv[]) {
  	
 	 	try {
-#if MODE == AIFF
+/*#if MODE == AIFF
  		std::cout << "Loading test.aiff" << std::endl;
  		std::ifstream aiff("test.aiff",std::ifstream::binary);
 		pylame::Transcode transcoder(aiff,5,48);
@@ -22,17 +22,17 @@
 		out << transcoder;
 		out.close();
 		std::cout << "Completed" << std::endl;
-#else
-		std::cout << "Loading test.wav" << std::endl;
- 		std::ifstream wav("test.wav",std::ifstream::binary);
+#else*/
+		std::cout << "Loading vp.wav" << std::endl;
+ 		std::ifstream wav("vp.wav",std::ifstream::binary);
 		//std::cout << aiff;
-		pylame::Transcode transcoder(wav,5,48);
-		std::cout << "Writing to testwav.mp3" << std::endl;
-		std::ofstream out("testwav.mp3",std::ofstream::binary);
+		pylame::Transcode transcoder(wav,5,8);
+		std::cout << "Writing to vpwav.mp3" << std::endl;
+		std::ofstream out("vpwav.mp3",std::ofstream::binary);
 		out << transcoder;
 		out.close();
 		std::cout << "Completed" << std::endl;
-#endif
+//#endif
 	}
 	catch(std::exception &e) {
 		std::cerr << e.what() << std::endl;

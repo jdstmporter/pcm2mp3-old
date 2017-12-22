@@ -9,6 +9,7 @@ from setuptools.config import read_configuration
 import utils
 from sys import exit
 
+
 checker=utils.CheckLibrary("mp3lame")
 checker.test()
 if not checker['mp3lame']:
@@ -20,8 +21,8 @@ metadata=configuration['metadata']
 
 package=metadata['name']
 
-libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp',
-        'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
+libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
+        'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
 qsrc=['Member.cpp','Quality.cpp']
@@ -29,6 +30,7 @@ rsrc=['Member.cpp','Rates.cpp']
 version=metadata['version']
 
 def makeExtension(module,src):
+    print("Making {} with {}".format(module,src))
     majorV,minorV = version.split('.')
     return Extension(package+'.'+module,
                     define_macros = [('MAJOR_VERSION', majorV),
@@ -44,11 +46,5 @@ rates = makeExtension('rates',rsrc)
 quality = makeExtension('quality',qsrc)
 
 setup (
-    entry_points = {
-        'distutils.commands' : [
-           'cleaner = utils:Cleaner' 
-           ]
-        },
-    ext_modules = [coder,rates,quality],
-    
-    )
+    ext_modules = [coder,rates,quality]   
+)

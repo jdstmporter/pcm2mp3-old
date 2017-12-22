@@ -11,24 +11,23 @@
 #include "base.hpp"
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
+#include "DataChunk.hpp"
 
 namespace pylame { namespace pcm {
 
 class WAVFile : public PCMFile {
-	using Iterator=Iterator32<Endianness::LittleEndian>;
-	using Form=DataForm<Endianness::LittleEndian>;
-	using Chunk=DataChunk<Endianness::LittleEndian>;
 friend std::ostream & operator << (std::ostream &o,const WAVFile &w);
 
 private:
-	Form form;
 	std::pair<long,long> clip();
-	void parseForm();
-	void fmtChunk(const Chunk &chunk);
-	void dataChunk(const Chunk &chunk);
 	
 protected:
 	static DataFormat convertFormat(const uint16_t);
+	virtual std::string FormHeader() const;
+	virtual FormMetaData::TypeMap FormTypes() const;
+	virtual void infoChunk(const std::shared_ptr<DataChunk> &);
+	virtual void soundChunk(const std::shared_ptr<DataChunk> &);
+
 public:
 	
 	WAVFile(const data_t &file_);
@@ -37,7 +36,6 @@ public:
 
 	
 	virtual PCMData bytes(); // Gives interleaved data
-	virtual FileType fileType() const { return form.fileType(); };
 	static bool isInstance(const data_t &d);
 	static bool isInstance(std::istream &stream);
 

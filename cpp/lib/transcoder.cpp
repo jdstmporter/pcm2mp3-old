@@ -30,21 +30,26 @@ std::shared_ptr<pcm::PCMFile> make(const data_t &in) {
 	return std::static_pointer_cast<pcm::PCMFile>(p);
 }
 
-Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate)  {
+Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
 	std::shared_ptr<pcm::PCMFile> infile;
 	if(pcm::WAVFile::isInstance(in)) infile=make<pcm::WAVFile>(in);
 	else if(pcm::AIFFFile::isInstance(in)) infile=make<pcm::AIFFFile>(in);
 	else throw MP3Error("Unrecognised file format");
 
-	mp3=mp3::MP3Encoder(infile,quality,rate);
-	mp3.transcode();
+	std::cout << "Creating transcoder" << std::endl;
+	mp3::MP3Encoder trans(infile,quality,rate);
+	std::cout << "About to transcode" << std::endl;
+	trans.transcode();
+	std::cout << "Transcoding completed" << std::endl;
+	out.assign(trans.cbegin(),trans.cend());
+
 }
 
 
 }
 
 std::ostream & operator<<(std::ostream &o,const pylame::Transcode &t) {
-	return t.out(o);
+	return t.output(o);
 }
 std::istream & operator>>(std::istream &i,pylame::Transcode &t) {
 	t=pylame::Transcode(i,5,48);

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace pylame {
 
@@ -49,7 +50,7 @@ using const_iterator_t = data_t::const_iterator;
 	};
 
 	enum class FileType {
-		AIFF,AIFC,RIFF,Other
+		AIFF,AIFC,WAV,Other
 	};
 
 	enum class Endianness : unsigned {

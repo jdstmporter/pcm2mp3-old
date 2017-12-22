@@ -8,7 +8,8 @@
 #ifndef PCMFILE_HPP_
 #define PCMFILE_HPP_
 
-#include "DataChunk.hpp"
+
+#include "Form.hpp"
 #include "Iterator32.hpp"
 #include <lame/lame.h>
 #include "base.hpp"
@@ -23,52 +24,13 @@ struct PCMData {
 		std::shared_ptr<short> right;
 
 		PCMData() : nChannels(), nSamples(), left(), right() {};
-
-		template <Endianness E>
-		void load(const unsigned nChannels_,const unsigned nSamples_,Iterator32<E> &it) {
-			nChannels=nChannels_;
-			nSamples=nSamples_;
-			if(nChannels<1 || nChannels>2) throw MP3Error("Invalid number of channels");
-
-			short *lBuffer=new short[nSamples];
-			short *rBuffer=new short[nSamples];
-
-			unsigned index=0;
-			if(nChannels==1) {
-				while(!it.finished()) {
-					auto d=it.nextPair();
-					lBuffer[index]=(short)d.first;
-					rBuffer[index]=0;
-					index++;
-					rBuffer[index]=(short)d.second;
-					rBuffer[index]=0;
-					index++;
-				}
-			} else { 	/// Stereo
-				while(!it.finished()) {
-					auto d=it.nextPair();
-					lBuffer[index]=(short)d.first;
-					rBuffer[index]=(short)d.second;
-					index++;
-				}
-			}
-			left=std::shared_ptr<short>(lBuffer);
-			right=std::shared_ptr<short>(rBuffer);
-		}
+		PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it);
 		virtual ~PCMData() = default;
-
-		template<Endianness E>
-		static PCMData make(const unsigned nChannels,const unsigned nSamples,Iterator32<E> &it) {
-			PCMData p;
-			p.load(nChannels,nSamples,it);
-			return p;
-		}
 	};
 
 class PCMFile {
 
 protected:
-
 
 	unsigned short nChannels=0;
 	unsigned sampleRate=0;
@@ -78,30 +40,24 @@ protected:
 	unsigned dataSize=0;
 	unsigned bitsPerSample=0;
 	DataFormat format;
+	FormMetaData metadata;
 	data_t file;
+	Form form;
 
+	virtual void infoChunk(const std::shared_ptr<DataChunk> &chunk) { throw MP3Error("Not implemented"); };
+	virtual void soundChunk(const std::shared_ptr<DataChunk> &chunk) { throw MP3Error("Not implemented"); };
+	virtual void parse(Iterator32 &it,const std::string &info,const std::string &sound);
+
+	virtual std::string FormHeader() const { throw MP3Error("Not implemented"); };
+	virtual FormMetaData::TypeMap FormTypes() const { throw MP3Error("Not implemented"); };
 
 
 
 public:
 
-	PCMFile() : format(DataFormat::PCM), file()  {};
-	PCMFile(const data_t &file_) : format(DataFormat::PCM), file(file_)  {
-	};
-	PCMFile(std::istream &stream) : format(DataFormat::PCM), file() {
-		stream.seekg (0, stream.end);
-	    auto length = stream.tellg();
-	    stream.seekg (0, stream.beg);
-
-	    file.assign(length,0);
-	    auto c=file.data();
-	    int pos=0;
-	    while(pos<length) {
-	    	stream.read(c+pos,1024);
-	    	pos+=stream.gcount();
-	    }
-
-	};
+	PCMFile() : format(DataFormat::PCM), file(), form()  {};
+	PCMFile(const data_t &file_) : format(DataFormat::PCM), file(file_), form()  {};
+	PCMFile(std::istream &stream);
 	virtual ~PCMFile() = default;
 
 
@@ -116,7 +72,10 @@ public:
 	virtual unsigned dSize() const { return dataSize; };
 	virtual unsigned sampleSize() const { return bitsPerSample; };
 	virtual unsigned sampleSizeInBytes() const { return bytesPerSample; };
-	virtual FileType fileType() const { throw MP3Error("Not implemented"); };
+	bool isWAV() const { return metadata.type==FileType::WAV; };
+	bool isAIFC() const { return metadata.type==FileType::AIFC; };
+	bool isAIFF() const { return metadata.type==FileType::AIFF; };
+	virtual FileType fileType() const { return metadata.type; };
 
 
 

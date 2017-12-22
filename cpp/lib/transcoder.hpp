@@ -24,7 +24,8 @@ data_t load(std::istream &stream);
 
 class Transcode {
 private:
-	mp3::MP3Encoder mp3;
+	cdata_t out;
+
 	
 public:
 	Transcode(const data_t &in,const unsigned quality,const unsigned rate) ;
@@ -32,14 +33,15 @@ public:
 		Transcode(load(in),quality,rate) {};
 	virtual ~Transcode() = default;
 	
-	cdata_t::const_iterator cbegin() const { return mp3.cbegin(); };
-	cdata_t::const_iterator cend() const { return mp3.cend(); };  
-	const unsigned char *ptr() { return mp3.ptr(); };
-	unsigned size() const { return mp3.size(); };
+	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
+	cdata_t::const_iterator cend() const { return out.cend(); };
+	unsigned size() const { return out.size(); };
 
-	std::ostream & out(std::ostream &o) const {
-		o << mp3;
-	    return o;
+	std::ostream & output(std::ostream &o) const {
+		const unsigned char *u=out.data();
+		const char *d=reinterpret_cast<const char *>(u);
+		o.write(d,out.size());
+		return o;
 	};
 };
 
