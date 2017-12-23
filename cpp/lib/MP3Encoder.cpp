@@ -47,14 +47,30 @@ void MP3Encoder::transcode() {
 		std::shared_ptr<short int> pcmRight=d.right;
 		mp3Out=output.data();
 		auto status=lame_encode_buffer(gf,pcmLeft.get(),pcmRight.get(),nSamples,mp3Out,mp3Size);
-		std::cout << "Status is " << status << std::endl;
-		if(status<0) throw MP3Error("Transcoding failed");
+		if(status<0) {
+			switch(status) {
+			case -1:
+				throw MP3Error("Transcoding failed: insufficient memory allocated for transcoding");
+				break;
+			case -2:
+				throw MP3Error("Transcoding failed: memory fault");
+				break;
+			case -3:
+				throw MP3Error("Transcoding failed: liblamemp3 subsystem not initialised");
+				break;
+			case -4:
+				throw MP3Error("Transcoding failed: psycho-acoustic problem");
+				break;
+			default:
+				throw MP3Error("Transcoding failed");
+				break;
+			}
+		}
 		mp3Size=status;
 		output.resize(status);
 	}
 	catch(MP3Error &e) { throw e; }
 	catch(std::exception &e) {
-		std::cout << "Error: " << e.what() << std::endl;
 		throw MP3Error("Transcoding failed");
 	}
 }

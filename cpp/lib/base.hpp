@@ -15,6 +15,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <sstream>
 
 namespace pylame {
 
@@ -23,12 +24,37 @@ using cdata_t = std::vector<unsigned char>;
 using iterator_t = data_t::iterator;
 using const_iterator_t = data_t::const_iterator;
 
+class StringMaker {
+private:
+	std::stringstream s;
+
+	template<typename T>
+	void add(T t) {
+		s << t;
+	};
+	template<typename T,typename ...Terms>
+	void add(T t, Terms...terms) {
+		s << t;
+		add(terms...);
+	}
+
+public:
+
+	template<typename ...Terms>
+	StringMaker(Terms ...params) : s() {
+		add(params...);
+	}
+	virtual ~StringMaker() = default;
+	std::string str() const { return s.str(); }
+};
 
 	class MP3Error : public std::exception {
 	private:
 		std::string message;
 	public:
 		MP3Error(const std::string &message_) noexcept : std::exception(), message(message_) {} ;
+		template<typename ...Terms>
+		MP3Error(Terms ...params) noexcept : std::exception(), message(StringMaker(params...).str()) {};
 		MP3Error(const MP3Error &) = default;
 		MP3Error & operator=(const MP3Error &) = default;
 		virtual ~MP3Error() = default;

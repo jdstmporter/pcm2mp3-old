@@ -49,10 +49,10 @@ namespace pylame { namespace pcm {
 				it++;
 			}
 	}
-	std::pair<const_iterator_t,const_iterator_t> Iterator32::getN(const unsigned n) {
-		auto p=std::make_pair(it,it+n);
+	data_t Iterator32::getN(const unsigned n) {
+		data_t d(it,it+n);
 		it+=n;
-		return p;
+		return d;
 	}
 		char Iterator32::get() {
 			if(it==end) throw MP3Error("Overrun end of file");

@@ -36,14 +36,22 @@ Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate
 	else if(pcm::AIFFFile::isInstance(in)) infile=make<pcm::AIFFFile>(in);
 	else throw MP3Error("Unrecognised file format");
 
-	std::cout << "Creating transcoder" << std::endl;
 	mp3::MP3Encoder trans(infile,quality,rate);
-	std::cout << "About to transcode" << std::endl;
 	trans.transcode();
-	std::cout << "Transcoding completed" << std::endl;
 	out.assign(trans.cbegin(),trans.cend());
 
 }
+
+const char* Transcode::ptr() const {
+	const unsigned char *u=out.data();
+	const char *d=reinterpret_cast<const char *>(u);
+	return d;
+}
+
+std::ostream & Transcode::output(std::ostream &o) const {
+		o.write(ptr(),size());
+		return o;
+	};
 
 
 }

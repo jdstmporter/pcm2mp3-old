@@ -14,7 +14,7 @@ namespace pylame { namespace pcm {
 
 DataFormat WAVFile::convertFormat(const uint16_t value) {
 	switch(value) {
-	case 0: case 1:
+		case 1:
 		return DataFormat::PCM;
 		case 3:
 		return DataFormat::IEEEFloat;
@@ -23,8 +23,7 @@ DataFormat WAVFile::convertFormat(const uint16_t value) {
 		case 7:
 		return DataFormat::ULaw;
 		default:
-			std::cout << "Data format is " << value << " which doesn't work" << std::endl;
-			throw MP3Error("Unknown WAV data format");
+			throw MP3Error("Unknown WAV data format : ",value);
 	}	
 };
 
@@ -50,9 +49,9 @@ void WAVFile::infoChunk(const std::shared_ptr<DataChunk> &chunk) {
 
 	auto alignBits=itc.nextPair();
 	bitsPerSample=alignBits.second;
-	if((bitsPerSample&7) != 0) throw MP3Error("Bad bits per sample");
+	if((bitsPerSample&7) != 0) throw MP3Error("Bad bits per sample: ",bitsPerSample);
 
-	std::cout << "nCh=" << nChannels << " rate=" << byteRate << " sRate=" << sampleRate << " BPS=" << bitsPerSample << std::endl;
+	//std::cout << "nCh=" << nChannels << " rate=" << byteRate << " sRate=" << sampleRate << " BPS=" << bitsPerSample << std::endl;
 	bytesPerSample=bitsPerSample/8;
 	if(alignBits.first!= bytesPerSample*nChannels) throw MP3Error("Block align check failed");
 	if(byteRate != sampleRate*bytesPerSample*nChannels) throw MP3Error("Byte rate check failed");
@@ -92,11 +91,9 @@ PCMData WAVFile::bytes() {
 bool WAVFile::isInstance(const data_t &d) {
 		try {
 			WAVFile w(d);
-			std::cout << "Is WAV" << std::endl;
 			return true;
 		}
-		catch(std::exception &e) {
-			std::cout << "Is not WAV : " << e.what() << std::endl;
+		catch(...) {
 			return false;
 		}
 	};

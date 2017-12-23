@@ -6,11 +6,15 @@
  */
 #include "DataChunk.hpp"
 
-std::ostream & operator<<(std::ostream &o,const pylame::pcm::DataChunk &c) {
+using namespace pylame::pcm;
+
+std::ostream & operator<<(std::ostream &o,const DataChunk &c) {
 	o << "Chunk " << c.kind() << " of length " << c.size();
 
 	return o;
 }
+
+
 
 void pylame::pcm::DataChunk::print() const {
 	unsigned index=0;

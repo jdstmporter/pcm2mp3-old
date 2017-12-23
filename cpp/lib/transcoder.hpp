@@ -35,14 +35,9 @@ public:
 	
 	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
 	cdata_t::const_iterator cend() const { return out.cend(); };
+	const char *ptr() const;
 	unsigned size() const { return out.size(); };
-
-	std::ostream & output(std::ostream &o) const {
-		const unsigned char *u=out.data();
-		const char *d=reinterpret_cast<const char *>(u);
-		o.write(d,out.size());
-		return o;
-	};
+	std::ostream & output(std::ostream &o) const;
 };
 
 

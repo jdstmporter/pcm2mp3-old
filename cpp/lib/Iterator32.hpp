@@ -52,7 +52,7 @@ public:
 
 
 	void getN(const unsigned n,char *data);
-	std::pair<const_iterator_t,const_iterator_t> getN(const unsigned n);
+	data_t getN(const unsigned n);
 	char get();
 
 

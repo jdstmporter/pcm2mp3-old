@@ -14,7 +14,7 @@ namespace pcm {
 
 bool FormMetaData::verify(const std::string &head,const TypeMap &formats) {
 	try {
-		std::cout << "Got '"<< header << "' expected '" << head << "'" << std::endl;
+		//std::cout << "Got '"<< header << "' expected '" << head << "'" << std::endl;
 		if(header!=head) throw MP3Error("Form header mismatch with expected header");
 		auto it=formats.find(format);
 		if(it==formats.end()) throw MP3Error("Form format does not match any of those available");
@@ -22,7 +22,7 @@ bool FormMetaData::verify(const std::string &head,const TypeMap &formats) {
 		return true;
 	}
 	catch(std::exception &e) {
-		std::cerr << e.what() << std::endl;
+		//std::cerr << e.what() << std::endl;
 		type=FileType::Other;
 		return false;
 	}
@@ -36,9 +36,9 @@ bool Form::nextChunk() {
 		for(auto i=0;i<4;i++) bytes[i]=std::toupper(f.bytes[i],l);
 		std::string idx(bytes,4);
 		auto n=it.nextInt();
-		data_t d(n,0);
-		for(auto i=0;i<n;i++) d[i]=it.get();
-		auto c=std::make_shared<DataChunk>(idx,d,endian);
+		//data_t d(n,0);
+		//for(auto i=0;i<n;i++) d[i]=it.get();
+		auto c=std::make_shared<DataChunk>(idx,std::move(it.getN(n)),endian);
 		chunks[idx]=c;
 		return true;
 	}
@@ -56,7 +56,7 @@ FormMetaData Form::typeCheck() {
 
 void Form::walk() {
 	while(nextChunk()) {};
-	std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.second << std::endl; });
+	std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.first << std::endl; });
 }
 
 std::shared_ptr<DataChunk> Form::operator[](const std::string &ID) {

@@ -96,8 +96,7 @@ bool AIFFFile::isInstance(std::istream &stream) {
 				AIFFFile w(stream);
 				return true;
 			}
-			catch(std::exception &e) {
-				std::cout << e.what() << std::endl;
+			catch(...) {
 				return false;
 			}
 		};
