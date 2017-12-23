@@ -1,24 +1,28 @@
 ==================================
-Package documentation for wav2mp3
+Package documentation for pcm2mp3
 ==================================
 
-A very simple module that converts standard WAV audio files to compressed MP3 files, given control 
-over the quality of the resulting file and the quality of the conversion process.  It is basically a lightweight wrapper around the LAME_ transcoder library, hiding much of the complexity (and the advanced 
-functionality).  The purpose of the exercise is to be *quick* and *simple*.
+A very simple module that converts PCM audio data in WAV, AIFF or AIFC files to compressed audio data in MP3 files, allowing choice of bitrate and the quality of the conversion process.  
+
+The module is basically a lightweight wrapper around the LAME_ transcoder library, hiding much of the complexity (and the advanced functionality).  The purpose of the exercise is to be *quick* and *simple*.
 
 Functions
 ---------
 
-The module exposes one function **transcode** which can be invoked in two ways:
+The module exposes one function **transcode** which takes PCM audio data and transcodes it to MP3 data at a specified sample rate.  The PCM audio data must:
 
-File version
-  ``wav2mp3`` . **transcode** (*infile*, *outfile*, *bitrate=64*, *quality=5*)
+* be encapsulated in standard WAV, AIFF or AIFC format
+* have one or two channels (mono or stereo)
+* be encoded as 16 bit linear integer PCM
+
+anything else results in an exception.  It is not necessary to tell **transcode** which of the aceptable file formats is used.
+
+**transcode** may be invoked in two ways:   
+
+``pcm2mp3`` . **transcode** (*infile*, *outfile*, *bitrate=64*, *quality=5*)
 
   :infile:     
-    The name of the input WAV file, *with* its file extension.  E.g. ``audio.wav``.
-    
-    It must be the name of a standard WAV file, containing mono or stereo 16 bit linear PCM 
-    encoded audio data.  If it is not, then an exception is thrown.
+    The name of the input file, *with* its file extension.  E.g. ``audio.wav`` or ``audio.aif``.
 
   :outfile:    
     The name to assign to the output MP3 file, *with* its file extension.  E.g. ``audio.mp3``.
@@ -42,12 +46,11 @@ File version
   :Return value:
     The length of the output MP3 file in bytes (the size of *outfile*)
 
-Stream version
-  ``wav2mp3`` . **transcode** (*stream*, *bitrate=64*, *quality=5*)
+
+``pcm2mp3`` . **transcode** (*stream*, *bitrate=64*, *quality=5*)
 
   :stream:
-    A bytes-like object (typically an instance of **bytes**) containing the raw bytes of a 
-    standard WAV file, containing mono or stereo 16 bit linear PCM encoded audio data. 
+    A bytes-like object (typically an instance of **bytes**) containing the raw bytes of the audio file to transcode. 
     
 
   :bitrate:    
@@ -66,7 +69,7 @@ Exceptions
 Classes
 -------
 
-wav2mp3. **MP3Error**
+pcm2mp3. **MP3Error**
 
 A child of the standard **Exception** class, reporting on errors occurring during transcoding.  Opaque.
 
@@ -75,11 +78,11 @@ Example
 
 ::
 
-  import wav2mp3
+  import pcm2mp3
   
   try:
-      wav2mp3.transcode("input.wav","output.mp3",bitrate=8)
-  except wav2mp3.MP3Error as e:
+      pcm2mp3.transcode("input.wav","output.mp3",bitrate=8)
+  except pcm2mp3.MP3Error as e:
       print(str(e))
 
 
