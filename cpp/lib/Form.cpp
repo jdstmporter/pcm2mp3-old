@@ -17,7 +17,7 @@ bool FormMetaData::verify(const std::string &head,const TypeMap &formats) {
 		//std::cout << "Got '"<< header << "' expected '" << head << "'" << std::endl;
 		if(header!=head) throw MP3Error("Form header mismatch with expected header");
 		auto it=formats.find(format);
-		if(it==formats.end()) throw MP3Error("Form format does not match any of those available");
+		if(it==formats.end()) throw MP3Error("Form type does not match any of those available");
 		type=it->second;
 		return true;
 	}
@@ -30,16 +30,11 @@ bool FormMetaData::verify(const std::string &head,const TypeMap &formats) {
 
 bool Form::nextChunk() {
 	try {
-		auto f=it.convertNext();
-		std::locale l;
-		char bytes[4];
-		for(auto i=0;i<4;i++) bytes[i]=std::toupper(f.bytes[i],l);
-		std::string idx(bytes,4);
-		auto n=it.nextInt();
-		//data_t d(n,0);
-		//for(auto i=0;i<n;i++) d[i]=it.get();
+		auto idx=toUpper(it.next<std::string>());
+		auto n=it.next<uint32_t>();
 		auto c=std::make_shared<DataChunk>(idx,std::move(it.getN(n)),endian);
-		chunks[idx]=c;
+		//chunks[idx]=c;
+		chunks.insert(std::make_pair(idx,c));
 		return true;
 	}
 	catch(...) {
@@ -48,20 +43,22 @@ bool Form::nextChunk() {
 }
 
 FormMetaData Form::typeCheck() {
-	auto h=it.nextString();
-	len=it.nextInt();
-	auto t=it.nextString();
+	auto h=it.next<std::string>();
+	len=it.next<uint32_t>() ;
+	auto t=it.next<std::string>();
 	return FormMetaData(h,t,len);
 }
 
 void Form::walk() {
 	while(nextChunk()) {};
-	std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.first << std::endl; });
+	//std::for_each(chunks.begin(),chunks.end(),[](auto c) { std::cout << c.first << std::endl; });
 }
 
 std::shared_ptr<DataChunk> Form::operator[](const std::string &ID) {
 	try {
-		return chunks.at(ID);
+		auto ptr = chunks.find(ID);
+		if(ptr==chunks.end()) throw MP3Error("No such chunk");
+		return ptr->second;
 	}
 	catch(...) {
 		throw MP3Error("No such chunk");

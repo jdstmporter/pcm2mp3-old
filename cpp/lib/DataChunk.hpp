@@ -23,8 +23,10 @@ private:
 	Endianness endian;
 		
 public:
+
 	DataChunk() : ID(), data(), endian(Endianness::LittleEndian) {};
 	DataChunk(const std::string &name,const data_t &data_,const Endianness &e) : ID(name), data(data_), endian(e) {};
+	DataChunk(const std::string &name,data_t &&data_,const Endianness &e) : ID(name), data(data_), endian(e) {};
 	DataChunk(const DataChunk &) = default;
 	virtual ~DataChunk() = default;
 	DataChunk & operator=(const DataChunk &) = default;

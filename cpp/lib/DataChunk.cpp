@@ -10,7 +10,6 @@ using namespace pylame::pcm;
 
 std::ostream & operator<<(std::ostream &o,const DataChunk &c) {
 	o << "Chunk " << c.kind() << " of length " << c.size();
-
 	return o;
 }
 

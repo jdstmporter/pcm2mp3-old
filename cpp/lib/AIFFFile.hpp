@@ -19,9 +19,12 @@ private:
 	unsigned offset = 0;
 	unsigned blocksize = 0;
 
+
 protected:
+	static DataFormat convertFormat(const std::string &);
 	virtual std::string FormHeader() const;
 	virtual FormMetaData::TypeMap FormTypes() const;
+
 	virtual void infoChunk(const std::shared_ptr<DataChunk> &);
 	virtual void soundChunk(const std::shared_ptr<DataChunk> &);
 

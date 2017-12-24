@@ -9,7 +9,17 @@
 #include "Conversions.hpp"
 #include <cstdlib>
 #include <locale>
-using namespace pylame::pcm;
+
+namespace pylame { namespace pcm {
+
+DataFormat AIFFFile::convertFormat(const std::string &f) {
+	    auto fmt=toLower(f);
+	    if(fmt=="none" || fmt=="sowt") return DataFormat::PCM;
+	    else if(fmt=="fl32" || fmt=="fl64") return DataFormat::IEEEFloat;
+	    else if(fmt=="ulaw") return DataFormat::ULaw;
+	    else if(fmt=="alaw") return DataFormat::ALaw;
+	    else throw MP3Error("Unknown AIFC data format");
+}
 
 std::string AIFFFile::FormHeader() const { return "FORM"; };
 
@@ -39,32 +49,21 @@ void AIFFFile::infoChunk(const std::shared_ptr<DataChunk> &comm) {
 	
     auto itc=comm->iterator();
     
-    auto p1=itc.nextPair();
-    auto p2=itc.nextPair();
+    auto p1=itc.next<pair_t>();
+    auto p2=itc.next<pair_t>();
     nChannels=(unsigned)p1.first;
     nSamples=swap(p1.second,p2.first);
     bitsPerSample=(unsigned)p2.second;
-    sampleRate=(unsigned)itc.nextLongDouble();
-    if(isAIFC()) {
-    	auto f=itc.convertNext();
-    	char bytes[4];
-    	std::locale l;
-    	for(auto i=0;i<4;i++) bytes[i]=std::tolower(f.bytes[i],l);
-    	std::string fmt(bytes,4);
-    	if(fmt=="none" || fmt=="sowt") format=DataFormat::PCM;
-    	else if(fmt=="fl32" || fmt=="fl64") format=DataFormat::IEEEFloat;
-    	else if(fmt=="ulaw") format=DataFormat::ULaw;
-    	else if(fmt=="alaw") format=DataFormat::ALaw;
-    	else MP3Error("Unknown AIFC data format");
-    }
-    else format=DataFormat::PCM;
+    sampleRate=(unsigned)itc.next<long double>();
+    if(!isAIFC()) format=DataFormat::PCM;
+    else format=AIFFFile::convertFormat(itc.next<std::string>());
 }
 
 void AIFFFile::soundChunk(const std::shared_ptr<DataChunk> &ssnd) {
 	 	dataSize=ssnd->size()-8;
 	 	auto it=ssnd->iterator();
-	 	offset=it.nextInt();
-	 	blocksize=it.nextInt();
+	 	offset=it.next<uint32_t>();
+	 	blocksize=it.next<uint32_t>();
 	 	if(it.size()!=dataSize) throw MP3Error("Data size error");
 }
 
@@ -101,4 +100,5 @@ bool AIFFFile::isInstance(std::istream &stream) {
 			}
 		};
 
+}}
 

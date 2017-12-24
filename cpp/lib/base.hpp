@@ -24,6 +24,9 @@ using cdata_t = std::vector<unsigned char>;
 using iterator_t = data_t::iterator;
 using const_iterator_t = data_t::const_iterator;
 
+std::string toUpper(const std::string &s);
+std::string toLower(const std::string &s);
+
 class StringMaker {
 private:
 	std::stringstream s;
@@ -86,6 +89,7 @@ public:
 
 
 }
+
 
 std::ostream & operator<<(std::ostream &o,const pylame::MP3Error &ex);
 

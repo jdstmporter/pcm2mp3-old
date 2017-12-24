@@ -38,7 +38,7 @@ namespace pcm {
 	private:
 		Iterator32 it;
 		FileType type;
-		std::map<std::string,std::shared_ptr<DataChunk>> chunks;
+		std::multimap<std::string,std::shared_ptr<DataChunk>> chunks;
 		unsigned len;
 		Endianness endian;
 
@@ -59,6 +59,7 @@ namespace pcm {
 		unsigned size() const { return chunks.size(); };
 		unsigned bytesInFile() const { return len; };
 		bool has(const std::string &key) const { return chunks.count(key)>0; };
+		unsigned hasOne(const std::string &key) const { return chunks.count(key)==1; };
 		std::shared_ptr<DataChunk> operator[](const std::string &ID);
 
 	};

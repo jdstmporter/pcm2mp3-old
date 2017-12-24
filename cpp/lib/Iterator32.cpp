@@ -52,12 +52,27 @@ namespace pylame { namespace pcm {
 	data_t Iterator32::getN(const unsigned n) {
 		data_t d(it,it+n);
 		it+=n;
-		return d;
+		return std::move(d);
 	}
 		char Iterator32::get() {
 			if(it==end) throw MP3Error("Overrun end of file");
 			return *it++;
 		}
+
+		template<>
+		uint32_t Iterator32::next<uint32_t>() { return wrap(convertNext().u32); };
+		template<>
+		uint64_t Iterator32::next<uint64_t>() { return convertNext64().u64; };
+		template<>
+		float Iterator32::next<float>() { return convertNext().f; };
+		template<>
+		double Iterator32::next<double>() { return convertNext64().d; };
+		template<>
+		long double Iterator32::next<long double>() { return nextLongDouble(); };
+		template<>
+		std::string Iterator32::next<std::string>() { return nextString(); };
+		template<>
+		pair_t Iterator32::next<pair_t>() { return nextPair(); };
 
 
 }}

@@ -40,14 +40,14 @@ void WAVFile::infoChunk(const std::shared_ptr<DataChunk> &chunk) {
 
 
 
-	auto fmtCh=itc.nextPair();
+	auto fmtCh=itc.next<pair_t>();
 	format=convertFormat(fmtCh.first);
 	nChannels=fmtCh.second;
 
-	sampleRate=itc.nextInt();
-	auto byteRate=itc.nextInt();
+	sampleRate=itc.next<uint32_t>();
+	auto byteRate=itc.next<uint32_t>();
 
-	auto alignBits=itc.nextPair();
+	auto alignBits=itc.next<pair_t>();
 	bitsPerSample=alignBits.second;
 	if((bitsPerSample&7) != 0) throw MP3Error("Bad bits per sample: ",bitsPerSample);
 

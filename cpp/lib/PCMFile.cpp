@@ -21,7 +21,7 @@ PCMData::PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &
 			if(nChannels==1) {
 				while(!it.finished()) {
 					try {
-						auto d=it.nextPair();
+						auto d=it.next<pair_t>();
 						lBuffer[index]=(short)d.first;
 						rBuffer[index]=0;
 						index++;
@@ -38,7 +38,7 @@ PCMData::PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &
 			} else { 	/// Stereo
 				while(!it.finished()) {
 					try {
-						auto d=it.nextPair();
+						auto d=it.next<pair_t>();
 						lBuffer[index]=(short)d.first;
 						rBuffer[index]=(short)d.second;
 						index++;
@@ -79,9 +79,11 @@ void PCMFile::parse(Iterator32 &it,const std::string &info,const std::string &so
 	nBytesInFile=metadata.length;
 	form.walk();
 
+	if(!form.hasOne(info)) throw MP3Error("File has anomalous info chunk count");
 	auto ic=form[info];
 	infoChunk(ic);
 
+	if(!form.hasOne(sound)) throw MP3Error("File has anomalous sound chunk count");
 	auto sc=form[sound];
 	soundChunk(sc);
 };
