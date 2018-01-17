@@ -74,5 +74,11 @@ namespace pylame { namespace pcm {
 		template<>
 		pair_t Iterator32::next<pair_t>() { return nextPair(); };
 
+		template<>
+		std::pair<int16_t,int16_t> Iterator32::nextPairOf() { return next<pair_t>(); }
+		template<>
+		std::pair<int32_t,int32_t> Iterator32::nextPairOf() { return std::make_pair(next<uint32_t>(),next<uint32_t>()); }
+		template<>
+		std::pair<float,float> Iterator32::nextPairOf() { return std::make_pair(next<float>(),next<float>()); }
 
 }}

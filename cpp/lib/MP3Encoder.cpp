@@ -6,6 +6,7 @@
  */
 
 #include "MP3Encoder.hpp"
+#include "PCMData.hpp"
 #include <algorithm>
 
 namespace pylame { namespace mp3 {
@@ -43,10 +44,27 @@ void MP3Encoder::transcode() {
 	try {
 
 		auto d=data->bytes();
-		std::shared_ptr<short int> pcmLeft=d.left;
-		std::shared_ptr<short int> pcmRight=d.right;
 		mp3Out=output.data();
-		auto status=lame_encode_buffer(gf,pcmLeft.get(),pcmRight.get(),nSamples,mp3Out,mp3Size);
+		int status=0;
+		switch(d.format) {
+		case pylame::SampleFormat::Int16: {
+			pylame::pcm::Channels<int16_t> channels=d.channels<int16_t>();
+			status=lame_encode_buffer(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+			break; }
+		case pylame::SampleFormat::Int32: {
+			pylame::pcm::Channels<int32_t> channels=d.channels<int32_t>();
+			status=lame_encode_buffer_int(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+			break; }
+		case pylame::SampleFormat::Float32: {
+			pylame::pcm::Channels<float> channels=d.channels<float>();
+			status=lame_encode_buffer_ieee_float(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+			break; }
+		default:
+			throw MP3Error("Unacceptable sample type");
+		}
+
+
+
 		if(status<0) {
 			switch(status) {
 			case -1:

@@ -7,6 +7,7 @@
 
 #include "AIFFFile.hpp"
 #include "Conversions.hpp"
+#include "PCMData.hpp"
 #include <cstdlib>
 #include <locale>
 
@@ -68,7 +69,7 @@ void AIFFFile::soundChunk(const std::shared_ptr<DataChunk> &ssnd) {
 }
 
 PCMData AIFFFile::bytes() {
-	if(format!=DataFormat::PCM) throw MP3Error("Can only enumerate PCM files");
+	if(format!=DataFormat::PCM and format!=DataFormat::IEEEFloat) throw MP3Error("Can only enumerate Int16, Int32 or Float32 files");
 	if(offset!=0 || blocksize!=0) throw MP3Error("Cannot enumerate blocked data sets");
 	auto qr=std::div(bitsPerSample,8);
 	if(qr.rem!=0) throw MP3Error("Cannot enumerate non-integral byte samples");
@@ -77,7 +78,7 @@ PCMData AIFFFile::bytes() {
 	std::shared_ptr<DataChunk> ssnd=form["SSND"];
 	auto it=ssnd->iterator();
 	it.skip(2);
-	return PCMData(nChannels,nSamples,it);
+	return PCMData(sampleFormat(),nChannels,nSamples,it);
 }
 
 

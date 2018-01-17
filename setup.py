@@ -21,7 +21,7 @@ metadata=configuration['metadata']
 
 package=metadata['name']
 
-libsrc=['MP3Encoder.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
+libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')

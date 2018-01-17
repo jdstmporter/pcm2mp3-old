@@ -13,20 +13,13 @@
 #include "Iterator32.hpp"
 #include <lame/lame.h>
 #include "base.hpp"
+#include "PCMData.hpp"
+
 
 namespace pylame { namespace pcm {
 
 
-struct PCMData {
-		unsigned nChannels;
-		unsigned nSamples;
-		std::shared_ptr<short> left;
-		std::shared_ptr<short> right;
 
-		PCMData() : nChannels(), nSamples(), left(), right() {};
-		PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it);
-		virtual ~PCMData() = default;
-	};
 
 class PCMFile {
 
@@ -76,6 +69,8 @@ public:
 	bool isAIFC() const { return metadata.type==FileType::AIFC; };
 	bool isAIFF() const { return metadata.type==FileType::AIFF; };
 	virtual FileType fileType() const { return metadata.type; };
+
+	pylame::SampleFormat sampleFormat() const;
 
 
 

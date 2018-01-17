@@ -43,9 +43,13 @@ bool Form::nextChunk() {
 }
 
 FormMetaData Form::typeCheck() {
+	std::cout << "Getting h" << std::endl;
 	auto h=it.next<std::string>();
+	std::cout << "Getting len" << std::endl;
 	len=it.next<uint32_t>() ;
+	std::cout << "Getting t" << std::endl;
 	auto t=it.next<std::string>();
+	std::cout << "Making metadata" << std::endl;
 	return FormMetaData(h,t,len);
 }
 

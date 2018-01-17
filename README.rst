@@ -1,4 +1,4 @@
-==================================
+cd /usr/==================================
 Package documentation for pcm2mp3
 ==================================
 
@@ -13,16 +13,18 @@ The module exposes one function **transcode** which takes PCM audio data and tra
 
 * be encapsulated in standard WAV, AIFF or AIFC format
 * have one or two channels (mono or stereo)
-* be encoded as 16 bit linear integer PCM
+* be encoded as 16 or 32 bit linear integer PCM, or as 32 bit Floating Point
 
-anything else results in an exception.  It is not necessary to tell **transcode** which of the aceptable file formats is used.
+anything else results in an exception.  It is not necessary to tell **transcode** which format the file uses.
 
 **transcode** may be invoked in two ways:   
 
 ``pcm2mp3`` . **transcode** (*infile*, *outfile*, *bitrate=64*, *quality=5*)
 
   :infile:     
-    The name of the input file, *with* its file extension.  E.g. ``audio.wav`` or ``audio.aif``.
+    The name of the input file, *with* its file extension.  E.g. ``audio.wav`` or ``audio.aif``.  Files in 32 bit floating 
+    point format are automatically normalised to the range [-1, +1] (also known as *IEEE* *Float*), so there is no
+    need to worry about normalisation.
 
   :outfile:    
     The name to assign to the output MP3 file, *with* its file extension.  E.g. ``audio.mp3``.

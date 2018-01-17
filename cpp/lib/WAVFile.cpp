@@ -81,11 +81,11 @@ std::pair<long,long> WAVFile::clip() {
 
 
 PCMData WAVFile::bytes() {
-	if(format!=DataFormat::PCM) throw MP3Error("Can only enumerate PCM files");
+	if(format!=DataFormat::PCM and format!=DataFormat::IEEEFloat) throw MP3Error("Can only enumerate Int16, Int32 or Float32 files");
 	
 	auto data=form["DATA"];
 	auto it=data->iterator();
-	return PCMData(nChannels,nSamples,it);
+	return PCMData(sampleFormat(),nChannels,nSamples,it);
 }
 
 bool WAVFile::isInstance(const data_t &d) {
@@ -93,7 +93,8 @@ bool WAVFile::isInstance(const data_t &d) {
 			WAVFile w(d);
 			return true;
 		}
-		catch(...) {
+		catch(std::exception &e) {
+			std::cout << "Error was " << e.what() << std::endl;
 			return false;
 		}
 	};
@@ -102,7 +103,8 @@ bool WAVFile::isInstance(std::istream &stream) {
 			WAVFile w(stream);
 			return true;
 		}
-		catch(...) {
+		catch(std::exception &e) {
+			std::cout << "Error was " << e.what() << std::endl;
 			return false;
 		}
 	};

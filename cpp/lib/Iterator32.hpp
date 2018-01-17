@@ -52,6 +52,9 @@ public:
 
 	template<typename T>
 	T next() { throw MP3Error("Not defined"); };
+
+	template<typename T>
+	std::pair<T,T> nextPairOf() { throw MP3Error("Not defined"); };
 		
 	Iterator32 fix(const unsigned n) const {
 		return Iterator32(it,it+n,endian);

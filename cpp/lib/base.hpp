@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "base.hpp"
+
 namespace pylame {
 
 using data_t = std::vector<char>;
@@ -71,7 +73,12 @@ public:
 			PCM = 1,
 			IEEEFloat = 3,
 			ALaw = 6,
-			ULaw = 7
+			ULaw = 7,
+			Unknown = 0
+	};
+
+	enum class SampleFormat {
+		Int16, Int32, Float32, Unknown
 	};
 
 	enum class Mode  {
@@ -86,6 +93,8 @@ public:
 		BigEndian = 1,
 		LittleEndian = 2
 	};
+
+
 
 
 }

@@ -9,50 +9,8 @@
 
 using namespace pylame::pcm;
 
-PCMData::PCMData(const unsigned nChannels_,const unsigned nSamples_,Iterator32 &it) {
-			nChannels=nChannels_;
-			nSamples=nSamples_;
-			if(nChannels<1 || nChannels>2) throw MP3Error("Invalid number of channels");
 
-			short *lBuffer=new short[nSamples];
-			short *rBuffer=new short[nSamples];
 
-			unsigned index=0;
-			if(nChannels==1) {
-				while(!it.finished()) {
-					try {
-						auto d=it.next<pair_t>();
-						lBuffer[index]=(short)d.first;
-						rBuffer[index]=0;
-						index++;
-						rBuffer[index]=(short)d.second;
-						rBuffer[index]=0;
-						index++;
-					}
-					catch(...) {
-						lBuffer[index]=0;
-						rBuffer[index]=0;
-						index++;
-					}
-				}
-			} else { 	/// Stereo
-				while(!it.finished()) {
-					try {
-						auto d=it.next<pair_t>();
-						lBuffer[index]=(short)d.first;
-						rBuffer[index]=(short)d.second;
-						index++;
-					}
-					catch(...) {
-						lBuffer[index]=0;
-						rBuffer[index]=0;
-						index++;
-					}
-				}
-			}
-			left=std::shared_ptr<short>(lBuffer);
-			right=std::shared_ptr<short>(rBuffer);
-		}
 
 PCMFile::PCMFile(std::istream &stream) : format(DataFormat::PCM), file(), form() {
 	stream.seekg (0, stream.end);
@@ -72,21 +30,59 @@ PCMFile::PCMFile(std::istream &stream) : format(DataFormat::PCM), file(), form()
 
 
 void PCMFile::parse(Iterator32 &it,const std::string &info,const std::string &sound) {
+	std::cout << "Setting up form" << std::endl;
 	form=Form(it);
+	std::cout << "Getting metadata" << std::endl;
 	metadata=form.typeCheck();
-
+	std::cout << "Checking metadata" << std::endl;
 	if(!metadata.verify(FormHeader(),FormTypes())) throw MP3Error("Not Valid file type");
 	nBytesInFile=metadata.length;
+
+	std::cout << "Walking the form" << std::endl;
 	form.walk();
 
+	std::cout << "Checking chunk count" << std::endl;
 	if(!form.hasOne(info)) throw MP3Error("File has anomalous info chunk count");
 	auto ic=form[info];
 	infoChunk(ic);
 
+	std::cout << "Checking sound chunk count" << std::endl;
 	if(!form.hasOne(sound)) throw MP3Error("File has anomalous sound chunk count");
 	auto sc=form[sound];
 	soundChunk(sc);
+	std::cout << "Parsed" << std::endl;
 };
+
+pylame::SampleFormat PCMFile::sampleFormat() const {
+	switch(format) {
+	case DataFormat::PCM:
+		switch(bytesPerSample) {
+		case 2:
+			return SampleFormat::Int16;
+			break;
+		case 4:
+			return SampleFormat::Int32;
+			break;
+		default:
+			return SampleFormat::Unknown;
+			break;
+		}
+		break;
+	case DataFormat::IEEEFloat:
+		switch(bytesPerSample) {
+		case 4:
+			return SampleFormat::Float32;
+			break;
+		default:
+			return SampleFormat::Unknown;
+			break;
+		}
+		break;
+	default:
+		return SampleFormat::Unknown;
+		break;
+	}
+}
 
 
 std::ostream & operator<<(std::ostream &o,const pylame::pcm::PCMFile &w)  {
