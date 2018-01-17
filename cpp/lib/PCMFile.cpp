@@ -30,27 +30,20 @@ PCMFile::PCMFile(std::istream &stream) : format(DataFormat::PCM), file(), form()
 
 
 void PCMFile::parse(Iterator32 &it,const std::string &info,const std::string &sound) {
-	std::cout << "Setting up form" << std::endl;
 	form=Form(it);
-	std::cout << "Getting metadata" << std::endl;
 	metadata=form.typeCheck();
-	std::cout << "Checking metadata" << std::endl;
 	if(!metadata.verify(FormHeader(),FormTypes())) throw MP3Error("Not Valid file type");
 	nBytesInFile=metadata.length;
 
-	std::cout << "Walking the form" << std::endl;
 	form.walk();
 
-	std::cout << "Checking chunk count" << std::endl;
 	if(!form.hasOne(info)) throw MP3Error("File has anomalous info chunk count");
 	auto ic=form[info];
 	infoChunk(ic);
 
-	std::cout << "Checking sound chunk count" << std::endl;
 	if(!form.hasOne(sound)) throw MP3Error("File has anomalous sound chunk count");
 	auto sc=form[sound];
 	soundChunk(sc);
-	std::cout << "Parsed" << std::endl;
 };
 
 pylame::SampleFormat PCMFile::sampleFormat() const {

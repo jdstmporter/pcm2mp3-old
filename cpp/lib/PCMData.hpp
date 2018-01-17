@@ -42,7 +42,7 @@ struct PCMData {
 
 	void normaliseArray(float * array);
 
-	template<typename T>
+	template<typename T, class = typename std::enable_if<std::is_same<T,float>::value || std::is_same<T,int32_t>::value || std::is_same<T,int16_t>::value >::type>
 	Channels<T> channels() {
 
 		if(nChannels<1 || nChannels>2) throw MP3Error("Invalid number of channels");
@@ -55,7 +55,7 @@ struct PCMData {
 		if(nChannels==1) {
 			while(!it.finished()) {
 				try {
-					auto d=it.nextPairOf<T>();
+					std::pair<T,T> d=it.nextPairOf<T>();
 					lBuffer[index]=d.first;
 					rBuffer[index]=0;
 					index++;
@@ -72,7 +72,7 @@ struct PCMData {
 		} else { 	/// Stereo
 			while(!it.finished()) {
 				try {
-					auto d=it.nextPairOf<T>();
+					std::pair<T,T> d=it.nextPairOf<T>();
 					lBuffer[index]=d.first;
 					rBuffer[index]=d.second;
 					index++;

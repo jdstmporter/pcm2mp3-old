@@ -14,7 +14,6 @@ namespace pcm {
 
 bool FormMetaData::verify(const std::string &head,const TypeMap &formats) {
 	try {
-		//std::cout << "Got '"<< header << "' expected '" << head << "'" << std::endl;
 		if(header!=head) throw MP3Error("Form header mismatch with expected header");
 		auto it=formats.find(format);
 		if(it==formats.end()) throw MP3Error("Form type does not match any of those available");
@@ -43,14 +42,16 @@ bool Form::nextChunk() {
 }
 
 FormMetaData Form::typeCheck() {
-	std::cout << "Getting h" << std::endl;
-	auto h=it.next<std::string>();
-	std::cout << "Getting len" << std::endl;
-	len=it.next<uint32_t>() ;
-	std::cout << "Getting t" << std::endl;
-	auto t=it.next<std::string>();
-	std::cout << "Making metadata" << std::endl;
-	return FormMetaData(h,t,len);
+	try {
+		auto h=it.next<std::string>();
+		len=it.next<uint32_t>() ;
+		auto t=it.next<std::string>();
+		return FormMetaData(h,t,len);
+	}
+	catch(std::exception &e) {
+		//std::cerr << "Exception is" << e.what() << std::endl;
+		throw e;
+	}
 }
 
 void Form::walk() {

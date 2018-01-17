@@ -53,11 +53,8 @@ static PyObject * mp3file(PyObject *self, PyObject *args, PyObject *keywds) {
 			throw PException(PyExc_TypeError,"API is transcode(infile,outfile,bitrate=64,quality=5)");
 		}
 		try {
-			std::cout << "Loading " << inFile << std::endl;
 			std::ifstream wavFile(inFile,std::ifstream::binary);
-			std::cout << "Transcoding with output bit-rate " << bitRate << "kbps, quality " << quality << std::endl;
 			pylame::Transcode transcode(wavFile,quality,bitRate);
-			std::cout << "Transcoded - saving" << std::endl;
 			std::ofstream out(outFile,std::ofstream::binary);
 			out << transcode;
 			out.close();

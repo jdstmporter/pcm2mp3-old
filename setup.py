@@ -7,6 +7,7 @@ Created on 1 Dec 2017
 from setuptools import setup, Extension
 from setuptools.config import read_configuration
 import utils
+from collections import namedtuple
 from sys import exit
 
 
@@ -27,14 +28,22 @@ wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
 qsrc=['Member.cpp','Quality.cpp']
 rsrc=['Member.cpp','Rates.cpp']
-version=metadata['version']
+
+Version = namedtuple('Version',['major','minor','maintenance'])
+def processVersion():
+    version=metadata['version']
+    parts=version.split('.')
+    if len(parts)<3: parts.extend([0,0,0])
+    return Version(*(parts[:3]))
 
 def makeExtension(module,src):
     print("Making {} with {}".format(module,src))
-    majorV,minorV = version.split('.')
+    
+    v=processVersion()
     return Extension(package+'.'+module,
-                    define_macros = [('MAJOR_VERSION', majorV),
-                                     ('MINOR_VERSION', minorV)],
+                    define_macros = [('MAJOR_VERSION', v.major),
+                                     ('MINOR_VERSION', v.minor),
+                                     ('MAINTENANCE_VERSION', v.maintenance)],
                     sources = ['cpp/'+s for s in src],
                     language = 'c++',
                     include_dirs=['/usr/include'],
@@ -46,5 +55,5 @@ rates = makeExtension('rates',rsrc)
 quality = makeExtension('quality',qsrc)
 
 setup (
-    ext_modules = [coder,rates,quality]   
+    ext_modules = [coder,rates,quality]
 )

@@ -11,6 +11,7 @@
 #include "base.hpp"
 #include "Conversions.hpp"
 #include <iomanip>
+#include <type_traits>
 
 namespace pylame { namespace pcm {
 
@@ -23,21 +24,25 @@ private:
 	Endianness endian;
 
 	template <typename N>
-	N wrap(N n) {
-		return (endian==Endianness::LittleEndian) ? n : swap(n);
-	};
+			N wrap(N n) {
+				return (endian==Endianness::LittleEndian) ? n : swap(n);
+			};
 
 protected:
-
-	uint32_t nextInt() { return wrap(convertNext().u32); };
-	uint64_t nextInt64() { return convertNext64().u64; };
-	float nextFloat() { return convertNext().f; };
-	double nextDouble() { return convertNext64().d; };
-	long double nextLongDouble();
 	std::string nextString();
-	pair_t nextPair();
+		uint32_t nextInt() { return wrap(convertNext().u32); };
+			uint64_t nextInt64() { return convertNext64().u64; };
+			float nextFloat() { return convertNext().f; };
+			double nextDouble() { return convertNext64().d; };
+			long double nextLongDouble();
+
+			pair_t nextPair();
+
 
 public:
+
+
+
 	Iterator32() : end(), it(), endian(Endianness::LittleEndian) {};
 	Iterator32(const data_t &data,const Endianness &e) : end(data.end()), it(data.begin()), endian(e) {};
 	Iterator32(const Iterator32 &o) : end(o.end), it(o.it), endian(o.endian) {};
@@ -50,12 +55,41 @@ public:
 	Converter32 convertNext();
 	Converter64 convertNext64();
 
-	template<typename T>
-	T next() { throw MP3Error("Not defined"); };
+	template<typename T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	T next() {
+		if(std::is_same<T,uint32_t>::value) { return (T)wrap(convertNext().u32); };
+		if(std::is_same<T,uint64_t>::value) { return (T)convertNext64().u64; };
+		if(std::is_same<T,float>::value) { return (T)convertNext().f; };
+		if(std::is_same<T,double>::value) { return (T)convertNext64().d; };
+		if(std::is_same<T,long double>::value) { return (T)nextLongDouble(); };
+		throw MP3Error("Unknown type");
+	}
+	template<typename T, class = typename std::enable_if<std::is_same<T,std::string>::value>::type>
+	std::string next()
+	{
+		return nextString();
+	}
+	template<typename T, class = typename std::enable_if<std::is_same<T,pair_t>::value>::type>
+		pair_t next()
+		{
+			return nextPair();
+		}
+/*
+	uint32_t    next_uint32_t()   { return wrap(convertNext().u32); };
+	uint64_t    next_uint64_t()   { return convertNext64().u64; };
+	float       next_float()      { return convertNext().f; };
+	double      next_double()     { return convertNext64().d; };
+	long double next_long_double(){ return nextLongDouble(); };
+	std::string next_string()     { return nextString(); };
+	pair_t      next_pair()       { return nextPair(); };
+*/
+	template<typename T, class = typename std::enable_if<std::is_same<T,float>::value>::type>
+	std::pair<float,float> nextPairOf() { return std::make_pair(next<float>(),next<float>()); }
+	template<typename T, class = typename std::enable_if<std::is_same<T,int32_t>::value>::type>
+	std::pair<uint32_t,uint32_t> nextPairOf() { return std::make_pair(next<uint32_t>(),next<uint32_t>()); }
+	template<typename T, class = typename std::enable_if<std::is_same<T,int16_t>::value>::type>
+	pair_t nextPairOf() { return nextPair(); }
 
-	template<typename T>
-	std::pair<T,T> nextPairOf() { throw MP3Error("Not defined"); };
-		
 	Iterator32 fix(const unsigned n) const {
 		return Iterator32(it,it+n,endian);
 	};
@@ -70,6 +104,8 @@ public:
 
 	unsigned size() const { return end-it; }
 };
+
+
 
 
 }}

@@ -32,13 +32,10 @@ std::shared_ptr<pcm::PCMFile> make(const data_t &in) {
 
 Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
 	std::shared_ptr<pcm::PCMFile> infile;
-	std::cout << "Testing . . ." << std::endl;
 	if(pcm::WAVFile::isInstance(in)) {
-		std::cout << "It's a WAV" << std::endl;
 		infile=make<pcm::WAVFile>(in);
 	}
 	else if(pcm::AIFFFile::isInstance(in)) {
-		std::cout << "It's an AIFF" << std::endl;
 		infile=make<pcm::AIFFFile>(in);
 	}
 	else throw MP3Error("Unrecognised file format");

@@ -30,7 +30,8 @@ uint16_t swap(uint16_t in) {
 }
 
 std::pair<uint16_t,uint16_t> swap(std::pair<uint16_t,uint16_t> in) {
-	return std::make_pair(swap(in.first),swap(in.second));
+	auto o= std::make_pair(swap(in.first),swap(in.second));
+	return o;
 }
 
 uint32_t swap(uint32_t in) {
