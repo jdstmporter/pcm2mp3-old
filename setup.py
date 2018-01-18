@@ -54,6 +54,10 @@ coder = makeExtension('_pcm2mp3',wsrc)
 rates = makeExtension('rates',rsrc)
 quality = makeExtension('quality',qsrc)
 
+with open('README.rst') as readme:
+    longDescription = readme.read()
+
 setup (
-    ext_modules = [coder,rates,quality]
+    ext_modules = [coder,rates,quality],
+    long_description = longDescription 
 )
