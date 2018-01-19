@@ -30,7 +30,7 @@ std::shared_ptr<pcm::PCMFile> make(const data_t &in) {
 	return std::static_pointer_cast<pcm::PCMFile>(p);
 }
 
-Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
+Transcode::Transcode(const data_t &in,const MP3Settings &options = MP3Settings()) : out()  {
 	std::shared_ptr<pcm::PCMFile> infile;
 	if(pcm::WAVFile::isInstance(in)) {
 		infile=make<pcm::WAVFile>(in);
@@ -40,7 +40,7 @@ Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate
 	}
 	else throw MP3Error("Unrecognised file format");
 
-	mp3::MP3Encoder trans(infile,quality,rate);
+	mp3::MP3Encoder trans(infile,options);
 	trans.transcode();
 	out.assign(trans.cbegin(),trans.cend());
 

@@ -12,12 +12,20 @@
 
 using namespace pylame::pcm;
 
-void PCMData::normaliseArray(float * ptr) {
-	auto bounds=std::minmax_element(ptr,ptr+nSamples);
-	auto min=*bounds.first;
-	auto max=*bounds.second;
-	auto bound=std::max(fabs(min),fabs(max));
-	if(bound==0.0) return;
-	auto scale=1.0/bound;
-	for(unsigned i=0;i<nSamples;i++) ptr[i]*=scale;
-}
+
+
+Channels<float> PCMData::asFloat(bool boost) {
+		switch(format) {
+		case pylame::SampleFormat::Float32:
+			return channels<float>(boost);
+			break;
+		case pylame::SampleFormat::Int16:
+			return channels<int16_t>(boost).asFloat();
+			break;
+		case pylame::SampleFormat::Int32:
+			return channels<int32_t>(boost).asFloat();
+			break;
+		default:
+			throw MP3Error("Cannot process data type");
+		}
+	};

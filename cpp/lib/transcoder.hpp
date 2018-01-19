@@ -16,7 +16,11 @@
 #include "AIFFFile.hpp"
 #include "PCMFile.hpp"
 
+#include "Options.hpp"
+
 namespace pylame {
+
+
 
 
 
@@ -28,9 +32,9 @@ private:
 
 	
 public:
-	Transcode(const data_t &in,const unsigned quality,const unsigned rate) ;
-	Transcode(std::istream &in,const unsigned quality,const unsigned rate) :
-		Transcode(load(in),quality,rate) {};
+	Transcode(const data_t &in,const MP3Settings &options) ;
+	Transcode(std::istream &in,const MP3Settings &options) :
+		Transcode(load(in),options) {};
 	virtual ~Transcode() = default;
 	
 	cdata_t::const_iterator cbegin() const { return out.cbegin(); };

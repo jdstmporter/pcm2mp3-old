@@ -11,22 +11,26 @@
 
 namespace pylame { namespace mp3 {
 
+
+
 unsigned MP3Encoder::mp3SizeCalc(unsigned n) {
 	return unsigned((double)n*1.25+7200.0);
 }
 
 
-MP3Encoder::MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate) :
+MP3Encoder::MP3Encoder(const pcm::file_t &data_,const MP3Settings &options_) : options(options_),
 	data(data_), nSamples(data->samplesPerChannel()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
 		
 	gf = lame_init();
 	if(gf==nullptr) throw MP3Error("Cannot initialise LAME transcoder");
 	lame_set_num_channels(gf,data->nChans());
 	lame_set_in_samplerate(gf,data->samplesPerSecond());
-	lame_set_brate(gf,rate);
+	lame_set_brate(gf,options.rate());
 	lame_set_mode(gf,data->mp3Mode());
-	lame_set_quality(gf,quality);
+	lame_set_quality(gf,options.quality());
 	
+	if(options[Option::ReplayGain]) lame_set_findReplayGain(gf,1);
+
 	auto response=lame_init_params(gf);
 	if(response<0) throw MP3Error("Cannot initialise LAME transcoder options");
 
@@ -39,31 +43,47 @@ MP3Encoder::~MP3Encoder() {
 	lame_close(gf);
 	//delete[] mp3Out;
 }	
+
+int MP3Encoder::process_int16() {
+	pylame::pcm::Channels<int16_t> channels=data->bytes().channels<int16_t>();
+	return lame_encode_buffer(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+}
+
+int MP3Encoder::process_int32() {
+	pylame::pcm::Channels<int32_t> channels=data->bytes().channels<int32_t>();
+	return lame_encode_buffer_int(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+}
+
+int MP3Encoder::process_float(bool force) {
+	auto d=data->bytes();
+	auto boost=options[Option::Boost];
+	pylame::pcm::Channels<float> channels= (force) ? d.asFloat(boost) : data->bytes().channels<float>(boost);
+	return lame_encode_buffer_ieee_float(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
+}
+
+int MP3Encoder::process() {
+	if(options[Option::MakeFloat]) return process_float(true);
+	switch(data->bytes().format) {
+	case pylame::SampleFormat::Int16:
+		return process_int16();
+		break;
+	case pylame::SampleFormat::Int32:
+		return process_int32();
+		break;
+	case pylame::SampleFormat::Float32:
+		return process_float();
+		break;
+	default:
+		throw MP3Error("Unacceptable sample type");
+	}
+}
+
+
 	
 void MP3Encoder::transcode() {
 	try {
-
-		auto d=data->bytes();
 		mp3Out=output.data();
-		int status=0;
-		switch(d.format) {
-		case pylame::SampleFormat::Int16: {
-			pylame::pcm::Channels<int16_t> channels=d.channels<int16_t>();
-			status=lame_encode_buffer(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
-			break; }
-		case pylame::SampleFormat::Int32: {
-			pylame::pcm::Channels<int32_t> channels=d.channels<int32_t>();
-			status=lame_encode_buffer_int(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
-			break; }
-		case pylame::SampleFormat::Float32: {
-			pylame::pcm::Channels<float> channels=d.channels<float>();
-			status=lame_encode_buffer_ieee_float(gf,channels.left.get(),channels.right.get(),nSamples,mp3Out,mp3Size);
-			break; }
-		default:
-			throw MP3Error("Unacceptable sample type");
-		}
-
-
+		auto status=process();
 
 		if(status<0) {
 			switch(status) {

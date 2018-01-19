@@ -11,7 +11,7 @@
 #include "PCMFile.hpp"
 #include <lame/lame.h>
 #include "base.hpp"
-
+#include "Options.hpp"
 
 
 
@@ -19,8 +19,10 @@
 namespace pylame { namespace mp3 {
 
 
+
 class MP3Encoder {
 private:
+	MP3Settings options;
 	pcm::file_t data;
 	unsigned nSamples;
 	unsigned mp3Size;
@@ -30,9 +32,15 @@ private:
 	
 	static unsigned mp3SizeCalc(unsigned);
 
+	int process_int16();
+	int process_int32();
+	int process_float(bool force=false);
+
+	int process();
+
 public:
-	MP3Encoder() : data(nullptr), nSamples(0), mp3Size(0), mp3Out(nullptr), gf(nullptr), output() {};
-	MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate);
+	MP3Encoder() : data(nullptr), nSamples(0), mp3Size(0), mp3Out(nullptr), gf(nullptr), output(), options() {};
+	MP3Encoder(const pcm::file_t &data_,const MP3Settings &options_);
 	virtual ~MP3Encoder();
 	
 	void transcode();
