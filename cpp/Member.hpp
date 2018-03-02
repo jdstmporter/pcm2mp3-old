@@ -8,7 +8,7 @@
 #ifndef MODULE_CPP_MEMBER_HPP_
 #define MODULE_CPP_MEMBER_HPP_
 
-#include <python3.5/Python.h>
+#include <Python.h>
 #include <string>
 #include <stdexcept>
 

@@ -26,8 +26,6 @@ libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cp
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
-qsrc=['Member.cpp','Quality.cpp']
-rsrc=['Member.cpp','Rates.cpp']
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():
@@ -51,8 +49,7 @@ def makeExtension(module,src):
                     library_dirs = ['/usr/lib/x86_64-linux-gnu'])
 
 coder = makeExtension('_pcm2mp3',wsrc)
-rates = makeExtension('rates',rsrc)
-quality = makeExtension('quality',qsrc)
+
 
 with open('README.rst') as readme:
     longDescription = readme.read()
