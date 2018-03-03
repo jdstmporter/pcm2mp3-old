@@ -10,9 +10,16 @@ import utils
 from collections import namedtuple
 from sys import exit
 
+checker=utils.CheckCompiler("-std=c++14")
+try:
+    checker()
+except Exception as e:
+    print("Exception is {}".format(e))
+    print("Cannot build pcm2mp3 unless compiler supports -std=c++14")
+    exit(1)
 
 checker=utils.CheckLibrary("mp3lame")
-checker.test()
+checker()
 if not checker['mp3lame']:
     print("Cannot build pcm2mp3 unless libmp3lame is installed and on the compiler path")
     exit(1)
@@ -25,7 +32,7 @@ package=metadata['name']
 libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
-wsrc.append('Lame.cpp')
+wsrc.extend(['Lame.cpp','AudioFile.cpp'])
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():
@@ -46,15 +53,16 @@ def makeExtension(module,src):
                     language = 'c++',
                     include_dirs=['/usr/include'],
                     libraries = ['mp3lame'],
-                    library_dirs = ['/usr/lib/x86_64-linux-gnu'])
+                    library_dirs = ['/usr/lib/x86_64-linux-gnu'],
+                    extra_compile_args = ['-std=c++14', '-pthread', '-O3'])
 
-coder = makeExtension('_pcm2mp3',wsrc)
+coder = makeExtension('pcm2mp3',wsrc)
 
 
 with open('README.rst') as readme:
     longDescription = readme.read()
 
 setup (
-    ext_modules = [coder,rates,quality],
+    ext_modules = [coder],
     long_description = longDescription 
 )
