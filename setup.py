@@ -32,7 +32,7 @@ package=metadata['name']
 libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
-wsrc.extend(['Lame.cpp','AudioFile.cpp'])
+wsrc.extend(['Module.cpp','Exception.cpp','Lame.cpp','AudioFile.cpp'])
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():

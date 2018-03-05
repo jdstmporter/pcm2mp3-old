@@ -15,21 +15,14 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include "PException.hpp"
 
-class PException : public std::exception {
-private:
-	PyObject *ex;
-	std::string message;
-public:
-	PException(PyObject *type,const std::string &message_) : std::exception(), ex(type), message(message_) {};
-	virtual ~PException() = default;
+#if PY_MAJOR_VERSION==3
+	#define IS_PYTHON3
+#else
+	#define IS_PYTHON2
+#endif
 
-	virtual const char *what() const noexcept { return message.c_str(); };
-	PyObject *operator()() {
-		PyErr_SetString(ex,what());
-		return nullptr;
-	}
-};
 
 
 #endif /* MODULE_CPP_PYHEADER_HPP_ */
