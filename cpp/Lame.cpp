@@ -20,19 +20,11 @@
 
 static PyObject *mp3Error;
 
-const char* PackageName="pcm2mp3";
-const char* ModuleName="pcm2mp3._pcm2mp3";
+const char* ModuleName="pcm2mp3";
 const char* ErrorName="MP3Error";
 
-const char * fullModuleName() {
-	std::stringstream s;
-	s << PackageName << "." << ModuleName;
-	return s.str().c_str();
-}
-
-std::vector<std::string> kw {"","","bitrate","quality"};
-std::vector<char *> keywords(kw.size()+1,nullptr);
-
+std::vector<char *> keywordsF{"","","bitrate","quality",NULL};
+std::vector<char *> keywordsS{"","bitrate","quality",NULL};
 
 
 bool checkName(const char *name,const char *suffix) {
@@ -49,7 +41,7 @@ static PyObject * mp3file(PyObject *self, PyObject *args, PyObject *keywds) {
 
 	try {
 
-		if(!PyArg_ParseTupleAndKeywords(args,keywds,"ss|$II",keywords.data(),&inFile,&outFile,&bitRate,&quality)) {
+		if(!PyArg_ParseTupleAndKeywords(args,keywds,"ss|$II",keywordsF.data(),&inFile,&outFile,&bitRate,&quality)) {
 			throw PException(PyExc_TypeError,"API is transcode(infile,outfile,bitrate=64,quality=5)");
 		}
 		try {
@@ -75,7 +67,7 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 	Py_buffer buffer;
 
 	try {
-		if(!PyArg_ParseTupleAndKeywords(args,keywds,"y*|$II",keywords.data()+1,&buffer,&bitRate,&quality)) {
+		if(!PyArg_ParseTupleAndKeywords(args,keywds,"y*|$II",keywordsS.data(),&buffer,&bitRate,&quality)) {
 			throw PException(PyExc_TypeError,"API is transcode(stream,bitrate=64,quality=5)");
 		}
 		try {
@@ -107,7 +99,7 @@ static struct PyMethodDef methods[] = {
 
 static struct PyModuleDef module = {
 		PyModuleDef_HEAD_INIT,
-		fullModuleName(),
+		ModuleName,
 		"",			/// Documentation string
 		-1,			/// Size of state (-1 if in globals)
 		methods,
@@ -122,21 +114,17 @@ static struct PyModuleDef module = {
 
 
 
-PyMODINIT_FUNC PyInit__pcm2mp3(void) {
+PyMODINIT_FUNC PyInit_pcm2mp3(void) {
 	PyObject *m = PyModule_Create(&module);
 	if(m==NULL) return NULL;
 	try {
 		std::stringstream s;
-		s << fullModuleName() << "." << ErrorName;
+		s << ModuleName << "." << ErrorName;
 		mp3Error=PyErr_NewException(s.str().c_str(),NULL,NULL);
 		if(mp3Error==NULL) throw std::runtime_error("Cannot allocate MP3Error");
 		Py_INCREF(mp3Error);
 		auto result=PyModule_AddObject(m,ErrorName,mp3Error);
 		if(result<0) throw std::runtime_error("Cannot attach MP3Error to module");
-
-		// a bit of housekeeping
-		std::transform(kw.begin(),kw.end(),keywords.begin(),[](const std::string &s) {
-			return const_cast<char *>(s.c_str()); });
 		return m;
 	}
 	catch(std::exception &e) {

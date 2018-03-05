@@ -20,14 +20,11 @@ if not checker['mp3lame']:
 configuration=read_configuration('setup.cfg')
 metadata=configuration['metadata']
 
-package=metadata['name']
 
 libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.append('Lame.cpp')
-qsrc=['Member.cpp','Quality.cpp']
-rsrc=['Member.cpp','Rates.cpp']
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():
@@ -40,7 +37,7 @@ def makeExtension(module,src):
     print("Making {} with {}".format(module,src))
     
     v=processVersion()
-    return Extension(package+'.'+module,
+    return Extension(module,
                     define_macros = [('MAJOR_VERSION', v.major),
                                      ('MINOR_VERSION', v.minor),
                                      ('MAINTENANCE_VERSION', v.maintenance)],
@@ -50,14 +47,12 @@ def makeExtension(module,src):
                     libraries = ['mp3lame'],
                     library_dirs = ['/usr/lib/x86_64-linux-gnu'])
 
-coder = makeExtension('_pcm2mp3',wsrc)
-rates = makeExtension('rates',rsrc)
-quality = makeExtension('quality',qsrc)
+coder = makeExtension('pcm2mp3',wsrc)
 
 with open('README.rst') as readme:
     longDescription = readme.read()
 
 setup (
-    ext_modules = [coder,rates,quality],
+    ext_modules = [coder],
     long_description = longDescription 
 )
