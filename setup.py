@@ -11,9 +11,13 @@ from collections import namedtuple
 from sys import exit
 
 
-checker=utils.CheckLibrary("mp3lame")
-checker.test()
-if not checker['mp3lame']:
+checker=utils.CheckCompiler('-std=c++14')
+if not checker.run():
+    print("Cannot build pcm2mp3 unless compiler supports -std=c++14")
+    exit(1)
+
+checker=utils.CheckLibrary('mp3lame')
+if not checker.run():
     print("Cannot build pcm2mp3 unless libmp3lame is installed and on the compiler path")
     exit(1)
 
@@ -34,7 +38,7 @@ def processVersion():
     return Version(*(parts[:3]))
 
 def makeExtension(module,src):
-    print("Making {} with {}".format(module,src))
+    #print("Making {} with {}".format(module,src))
     
     v=processVersion()
     return Extension(module,
@@ -53,6 +57,7 @@ with open('README.rst') as readme:
     longDescription = readme.read()
 
 setup (
+    cmdclass = {'cleaner' : utils.Cleaner },
     ext_modules = [coder],
     long_description = longDescription 
 )

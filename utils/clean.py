@@ -9,6 +9,9 @@ import os
 
 class Cleaner(Command) :
     
+    
+    description='Perform a true deep clean, removing distributions, builds and egg-info'
+    
     user_options=[]
     
     def __init__(self,dist,**kwargs):

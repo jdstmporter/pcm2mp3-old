@@ -9,6 +9,7 @@ import os
 import shutil
 from distutils import ccompiler, sysconfig, errors 
 from sys import argv
+import traceback
 
 HelloWorld='''
 #include<iostream>
@@ -19,84 +20,131 @@ int main(int argc, char* argv[])
 }
 '''
 
-class LibraryError(Exception):
+class DependencyError(Exception):
     
     def __init__(self,message,inner=None):
-        super(LibraryError,self).__init__()
+        super(DependencyError,self).__init__()
         self.message=message
         self.inner=inner
         
     def __str__(self):
         if not self.inner:
-            st="Library exception: {}"
+            st="Dependency exception: {}"
             args=[self.message]
         else:
-            st="Library exception: {}  Inner {} : {}"
+            st="Dependency exception: {}  Inner {} : {}"
             args=[self.message,type(self.inner).__name__,str(self.inner)]
         return st.format(*args)
 
-
-class CheckLibrary(object):
+class CheckDependencies(object):
     
-    def __init__(self,*libs):
-        self.libraries=libs
-        self.tmp=mkdtemp(prefix='_libsearch')
+    def __init__(self,prefix):
+        self.tmp=mkdtemp(prefix=prefix)
         self.src=os.path.join(self.tmp,'hello.cpp')
         self.exe=os.path.join(self.tmp,'hello')
-        self.results=dict()
-
-    def _makeSource(self):
-        with open(self.src,'w') as file:
-            file.write(HelloWorld)
-    
-    def _cleanup(self):
-        try:
-            shutil.rmtree(self.tmp)
-        except:
-            pass
-        
-    def test(self):
-        try:
-            self._makeSource()
+        try: 
+            with open(self.src,'w') as file:
+                file.write(HelloWorld)
         except Exception as e:
-            raise LibraryError('Cannot create source file',inner=e)    
+            traceback.print_exc()
+            raise DependencyError('Cannot create source file',inner=e)
+        self.results={}
         
+ 
+    
+    def preCompilationTest(self,compiler):
+        pass
+    
+    def postCompilationTest(self,compiler,object):
+        pass
+    
+    def test(self):
         try:
             compiler = ccompiler.new_compiler()
             if not isinstance(compiler, ccompiler.CCompiler):
                 raise errors.CompileError("Compiler is not valid!")
             sysconfig.customize_compiler(compiler)
+            
+            self.preCompilationTest(compiler)
             o=compiler.compile([self.src])
+            self.postCompilationTest(compiler,o)
             
-            for lib in self.libraries:
-                try:
-                    exe=self.exe+"_"+lib
-                    compiler.link_executable(o,exe,libraries=[lib,'stdc++'])
-                    self.results[lib]=True
-                except Exception as e:
-                    self.results[lib]=False
-                  
         except errors.CompileError as e:
-            raise LibraryError('Compilation problems',inner=e)
+            raise DependencyError('Compilation problems',inner=e)
         except Exception as e:
-            raise LibraryError('General error',inner=e)
+            raise DependencyError('General error',inner=e)
+        
+    def clean(self):
+        try:
+            shutil.rmtree(self.tmp)
+        except:
+            pass
+        
+    def run(self):
+        
+        
+        try:
+            self.test()
+        except Exception as e:
+            print('Problem: {}'.format(e))
         finally:
-            self._cleanup()
+            self.clean()
+        for key,value in self.results.items():
+            if not value:
+                print('Test {} failed'.format(key))
+                return False
+        print('Test passed')
+        return True
             
-    def __getitem__(self,key):
-        return self.results[key]
+
+
+
+class CheckLibrary(CheckDependencies):
     
-    def __iter__(self):
-        return iter(self.results)
+    def __init__(self,*libs):
+        super(CheckLibrary,self).__init__('_libsearch')
+        self.libraries=libs
+        
+    def postCompilationTest(self,compiler,o):
+        for lib in self.libraries:
+            try:
+                exe=self.exe+"_"+lib
+                compiler.link_executable(o,exe,libraries=[lib,'stdc++'])
+                self.results[lib]=True
+            except Exception as e:
+                self.results[lib]=False
+
+class CheckCompiler(CheckDependencies):
+    
+    def __init__(self,args):
+        super(CheckCompiler,self).__init__('_compilersearch')
+        self.args=args
+        
+    def preCompilationTest(self,compiler):
+        cflags=os.environ.get('CFLAGS',' ')
+        os.environ['CFLAGS']=cflags+self.args
+        self.results['c++14']=False
+        
+    def postCompilationTest(self,compiler,o):
+        self.results['c++14']=True
+        
+    
+        
+          
     
     
-            
-    
-if __name__=='__main__':
-    c=CheckLibrary(*argv[1:])
-    c.test()
+def libs(*args):
+    c=CheckLibrary(*args)
+    c()
     for lib in c:
-        print("{} : {}".format(lib,c[lib]))
+        print("{} : {}".format(lib,c[lib]))     
+    
+            
+def gcc(*args):
+    c=CheckCompiler(*args)
+    c()
+    for lib in c:
+        print("{} : {}".format(lib,c[lib]))  
 
     
     
