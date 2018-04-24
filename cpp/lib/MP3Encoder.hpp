@@ -19,6 +19,8 @@
 namespace pylame { namespace mp3 {
 
 
+
+
 class MP3Encoder {
 private:
 	pcm::file_t data;
