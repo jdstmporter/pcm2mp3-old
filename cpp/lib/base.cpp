@@ -12,9 +12,44 @@ using namespace pylame;
 
 #include <cstdlib>
 #include <locale>
+#include <map>
 
 std::ostream & operator<<(std::ostream &o,const MP3Error &ex) {
 	o << "MP3Error : " << ex.what();
+	return o;
+}
+
+const std::map<FileType,std::string> typeNames={
+		{FileType::WAV, "WAV"},
+		{FileType::AIFF, "AIFF"},
+		{FileType::AIFC, "AIFC"},
+		{FileType::Other, "Other"}
+};
+const std::map<SampleFormat,std::string> sampleFormatNames={
+		{SampleFormat::Int16, "Int16"},
+		{SampleFormat::Int32, "Int32"},
+		{SampleFormat::Float32, "Float32"},
+		{SampleFormat::Unknown, "Other"}
+};
+
+const std::map<DataFormat,std::string> dataFormatNames={
+		{DataFormat::PCM, "PCM"},
+		{DataFormat::IEEEFloat, "IEEEFloat"},
+		{DataFormat::ALaw, "A-law"},
+		{DataFormat::ULaw, "U-law"},
+		{DataFormat::Unknown, "Other"}
+};
+
+std::ostream & operator<<(std::ostream &o,const FileType &type) {
+	o << typeNames[type];
+	return o;
+}
+std::ostream & operator<<(std::ostream &o,const SampleFormat &fmt) {
+	o << sampleFormatNames[fmt];
+	return o;
+}
+std::ostream & operator<<(std::ostream &o,const DataFormat &fmt) {
+	o << dataFormatNames[fmt];
 	return o;
 }
 

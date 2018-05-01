@@ -18,6 +18,23 @@
 
 namespace pylame {
 
+class MP3File {
+private:
+	mp3::MP3Parameters parameters;
+	cdata_t out;
+	double duration;
+
+public:
+	MP3File(const unsigned quality,const unsigned rate) : parameters(quality,rate), out(), duration(0.0) {};
+	MP3File(const mp3::MP3Parameters &p) : parameters(p), out(), duration(0.0) {};
+
+	void transcode(pcm::PCMFile *pcm);
+	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
+	cdata_t::const_iterator cend() const { return out.cend(); };
+	double getDuration() const { return duration; };
+	unsigned getRate() const { return parameters.Rate(); };
+	unsigned size() const { return (unsigned)out.size(); };
+};
 
 
 data_t load(std::istream &stream);
@@ -31,6 +48,7 @@ public:
 	Transcode(const data_t &in,const unsigned quality,const unsigned rate) ;
 	Transcode(std::istream &in,const unsigned quality,const unsigned rate) :
 		Transcode(load(in),quality,rate) {};
+	Transcode(pcm::PCMFile *pcm,const unsigned quality,const unsigned rate);
 	virtual ~Transcode() = default;
 	
 	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
@@ -44,6 +62,7 @@ public:
 
 }
 
+std::ostream & operator<<(std::ostream &o,const pylame::MP3File &t);
 std::ostream & operator<<(std::ostream &o,const pylame::Transcode &t);
 std::istream & operator>>(std::istream &i,pylame::Transcode &t);
 

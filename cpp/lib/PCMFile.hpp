@@ -53,7 +53,6 @@ public:
 	PCMFile(std::istream &stream);
 	virtual ~PCMFile() = default;
 
-
 	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };
 	MPEG_mode mp3Mode() { return nChannels==1 ? MONO : JOINT_STEREO; };
 	virtual unsigned samplesPerSecond() const { return sampleRate; };
@@ -71,6 +70,7 @@ public:
 	virtual FileType fileType() const { return metadata.type; };
 
 	pylame::SampleFormat sampleFormat() const;
+	virtual double duration() const { return nSamples/(double)sampleRate; };
 
 
 

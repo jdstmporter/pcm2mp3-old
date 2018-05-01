@@ -31,5 +31,9 @@ public:
 	}
 };
 
+long toLong(PyObject *obj);
+double toLDouble(PyObject *obj);
+std::string toString(PyObject *obj);
+bool toBool(PyObject *obj);
 
 #endif /* MODULE_CPP_PYHEADER_HPP_ */

@@ -10,6 +10,7 @@
 
 #include "MP3.hpp"
 #include "MP3Frame.hpp"
+#include <unordered_set>
 
 
 namespace mp3 {
@@ -28,9 +29,10 @@ private:
 	frameset_t frames;
 	MP3Frame initial;
 	offset_t offset;
+	std::unordered_set<unsigned> rates;
 
 public:
-	MP3File() : mp3(), frames(), initial(), offset(0) {};
+	MP3File() : mp3(), frames(), initial(), offset(0), rates() {};
 	MP3File(std::istream &stream) ;
 	virtual ~MP3File() = default;
 
@@ -38,9 +40,11 @@ public:
 	size_t size() const;
 	double duration() const;
 
-	iterator begin() const { return frames.cbegin(); }
-	iterator end() const { return frames.cend(); }
-
+	iterator begin() const { return frames.cbegin(); };
+	iterator end() const { return frames.cend(); };
+	bool isCBR() const { return rates.size()==1; };
+	bool isVBR() const { return rates.size()>1; };
+	unsigned bitRate() const;
 };
 
 } /* namespace mp3 */

@@ -11,25 +11,85 @@
 
 namespace pylame { namespace mp3 {
 
+const std::map<std::string,ID3Tag> MP3Parameters::id3names = {
+		{ "title" , ID3Tag::Title },
+		{ "artist" , ID3Tag::Artist },
+		{ "album" , ID3Tag::Album },
+		{ "year" , ID3Tag::Year },
+		{ "comment" , ID3Tag::Comment },
+		{ "track" , ID3Tag::Track },
+		{ "genre" , ID3Tag::Genre },
+};
+
+void MP3Parameters::write(lame_global_flags *gf) const {
+	lame_set_copyright(gf,copyright);
+	lame_set_original(gf,original);
+
+	id3tag_init(gf);
+	switch(versions) {
+	case ID3Versions::OneOnly:
+		id3tag_v1_only(gf);
+		break;
+	case ID3Versions::TwoOnly:
+			id3tag_v2_only(gf);
+			id3tag_pad_v2(gf);
+			break;
+	case ID3Versions::OneAndTwo:
+			id3tag_add_v2(gf);
+			id3tag_pad_v2(gf);
+			break;
+	}
+	for(auto it=id3.begin();it!=id3.end();it++) {
+		auto tag=it->first;
+		auto value=it->second;
+		switch(tag) {
+		case ID3Tag::Title:
+			id3tag_set_title(gf,value.c_str());
+			break;
+		case ID3Tag::Artist:
+					id3tag_set_artist(gf,value.c_str());
+					break;
+		case ID3Tag::Album:
+					id3tag_set_album(gf,value.c_str());
+					break;
+		case ID3Tag::Year:
+					id3tag_set_year(gf,value.c_str());
+					break;
+		case ID3Tag::Comment:
+					id3tag_set_comment(gf,value.c_str());
+					break;
+		case ID3Tag::Track:
+					id3tag_set_track(gf,value.c_str());
+					break;
+		case ID3Tag::Genre:
+					id3tag_set_genre(gf,value.c_str());
+					break;
+		}
+	}
+}
+
 unsigned MP3Encoder::mp3SizeCalc(unsigned n) {
 	return unsigned((double)n*1.25+7200.0);
 }
 
 
-MP3Encoder::MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate) :
+MP3Encoder::MP3Encoder(const pcm::file_t &data_,const unsigned quality,const unsigned rate) : MP3Encoder(data_,MP3Parameters(quality,rate)) {};
+
+
+MP3Encoder::MP3Encoder(const pcm::file_t &data_,const MP3Parameters &parameters):
 	data(data_), nSamples(data->samplesPerChannel()), mp3Size(MP3Encoder::mp3SizeCalc(nSamples)), output(mp3Size,0) {
 		
 	gf = lame_init();
 	if(gf==nullptr) throw MP3Error("Cannot initialise LAME transcoder");
 	lame_set_num_channels(gf,data->nChans());
 	lame_set_in_samplerate(gf,data->samplesPerSecond());
-	lame_set_brate(gf,rate);
+	lame_set_brate(gf,parameters.Rate());
 	lame_set_mode(gf,data->mp3Mode());
-	lame_set_quality(gf,quality);
+	lame_set_quality(gf,parameters.Quality());
 	
+	parameters.write(gf);
 	auto response=lame_init_params(gf);
 	if(response<0) throw MP3Error("Cannot initialise LAME transcoder options");
-
 
 	//mp3Out = new unsigned char[mp3Size];
 
@@ -41,6 +101,7 @@ MP3Encoder::~MP3Encoder() {
 }	
 	
 void MP3Encoder::transcode() {
+
 	try {
 
 		auto d=data->bytes();
@@ -84,8 +145,10 @@ void MP3Encoder::transcode() {
 				break;
 			}
 		}
-		mp3Size=status;
-		output.resize(status);
+		auto extra=lame_encode_flush(gf,mp3Out,status);
+
+		mp3Size=status+extra;
+		output.resize(status+extra);
 	}
 	catch(MP3Error &e) { throw e; }
 	catch(std::exception &e) {

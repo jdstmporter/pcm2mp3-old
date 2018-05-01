@@ -11,6 +11,7 @@
 
 
 
+
 namespace mp3 {
 
 
@@ -30,7 +31,7 @@ std::vector<char> MP3File::readBinaryFile(std::istream &stream) {
 	return file;
 }
 
-MP3File::MP3File(std::istream &stream) : mp3(readBinaryFile(stream)), frames(), initial(mp3,0) {
+MP3File::MP3File(std::istream &stream) : mp3(readBinaryFile(stream)), frames(), initial(mp3,0), rates() {
 	offset=initial.match();
 	frames.push_back(initial);
 }
@@ -39,6 +40,7 @@ MP3File::MP3File(std::istream &stream) : mp3(readBinaryFile(stream)), frames(), 
 void MP3File::parse() {
 	MP3Header head=initial.Header();
 	MP3ValidFrame validator(head);
+
 
 	while(offset<mp3.size()-MP3::MinimumFrameSize) {
 		try {
@@ -51,6 +53,10 @@ void MP3File::parse() {
 			offset+=MP3::FrameHeaderSize;
 		}
 	}
+	std::vector<unsigned> rateValues(frames.size(),0);
+	std::transform(frames.begin(),frames.end(),rateValues.begin(),[](auto f) { return f.BitRate(); });
+	rates.empty();
+	rates.insert(rateValues.begin(),rateValues.end());
 }
 
 size_t MP3File::size() const {
@@ -60,6 +66,10 @@ double MP3File::duration() const {
 	return double(size())/(125.0*double(initial.BitRate()));
 }
 
+unsigned MP3File::bitRate() const {
+	if(!isCBR()) throw std::runtime_error("File is not constant bit rate");
+	return *(rates.begin());
+}
 
 } /* namespace mp3 */
 

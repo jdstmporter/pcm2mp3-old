@@ -99,7 +99,9 @@ public:
 
 }
 
-
+std::ostream & operator<<(std::ostream &o,const pylame::FileType &type);
+std::ostream & operator<<(std::ostream &o,const pylame::SampleFormat &fmt);
+std::ostream & operator<<(std::ostream &o,const pylame::DataFormat &fmt);
 std::ostream & operator<<(std::ostream &o,const pylame::MP3Error &ex);
 
 
