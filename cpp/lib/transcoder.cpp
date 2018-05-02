@@ -9,12 +9,7 @@
 
 namespace pylame {
 
-void MP3File::transcode(pcm::PCMFile *pcm) {
-	mp3::MP3Encoder trans(pcm,parameters);
-	trans.transcode();
-	out.assign(trans.cbegin(),trans.cend());
-	duration=pcm->duration();
-}
+
 
 data_t load(std::istream &stream) {
 	stream.seekg (0, stream.end);

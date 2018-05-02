@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include "lib/lamer.hpp"
 #include "PCMObject.hpp"
+#include "MP3Object.hpp"
 
 
 static PyObject *mp3Error;
@@ -133,6 +134,16 @@ PyMODINIT_FUNC PyInit_pcm2mp3(void) {
 	    if (!mgr.isReady()) throw std::runtime_error("Cannot attach PCM to module");
 	    mgr.inc();
 	    mgr.add(m,"PCM");
+
+	    MP3Manager mp3;
+	    	    //inotify_WatcherType.tp_new = PyType_GenericNew;
+	    	    if (!mp3.isReady()) throw std::runtime_error("Cannot attach MP3 to module");
+	    	    mp3.inc();
+	    	    mp3.add(m,"MP3");
+
+	    for(auto it=MP3Manager::ID3Modes.begin();it!=MP3Manager::ID3Modes.end();it++) {
+	    	PyModule_AddIntConstant(m,it->first.c_str(),static_cast<unsigned>(it->second));
+	    }
 
 		return m;
 	}

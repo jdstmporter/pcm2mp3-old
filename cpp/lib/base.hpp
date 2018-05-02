@@ -16,6 +16,7 @@
 #include <memory>
 #include <algorithm>
 #include <sstream>
+#include <map>
 
 #include "base.hpp"
 

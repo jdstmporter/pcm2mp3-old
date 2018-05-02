@@ -19,20 +19,20 @@ std::ostream & operator<<(std::ostream &o,const MP3Error &ex) {
 	return o;
 }
 
-const std::map<FileType,std::string> typeNames={
+static const std::map<FileType,std::string> typeNames={
 		{FileType::WAV, "WAV"},
 		{FileType::AIFF, "AIFF"},
 		{FileType::AIFC, "AIFC"},
 		{FileType::Other, "Other"}
 };
-const std::map<SampleFormat,std::string> sampleFormatNames={
+static const std::map<SampleFormat,std::string> sampleFormatNames={
 		{SampleFormat::Int16, "Int16"},
 		{SampleFormat::Int32, "Int32"},
 		{SampleFormat::Float32, "Float32"},
 		{SampleFormat::Unknown, "Other"}
 };
 
-const std::map<DataFormat,std::string> dataFormatNames={
+static const std::map<DataFormat,std::string> dataFormatNames={
 		{DataFormat::PCM, "PCM"},
 		{DataFormat::IEEEFloat, "IEEEFloat"},
 		{DataFormat::ALaw, "A-law"},
@@ -41,15 +41,15 @@ const std::map<DataFormat,std::string> dataFormatNames={
 };
 
 std::ostream & operator<<(std::ostream &o,const FileType &type) {
-	o << typeNames[type];
+	o << typeNames.at(type);
 	return o;
 }
 std::ostream & operator<<(std::ostream &o,const SampleFormat &fmt) {
-	o << sampleFormatNames[fmt];
+	o << sampleFormatNames.at(fmt);
 	return o;
 }
 std::ostream & operator<<(std::ostream &o,const DataFormat &fmt) {
-	o << dataFormatNames[fmt];
+	o << dataFormatNames.at(fmt);
 	return o;
 }
 

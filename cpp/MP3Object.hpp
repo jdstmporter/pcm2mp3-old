@@ -10,12 +10,16 @@
 
 #include "PyHeader.hpp"
 #include "lib/PCMFile.hpp"
-#include "lib/transcoder.hpp"
+#include "lib/MP3File.hpp"
+#include "lib/MP3Data.hpp"
 
 typedef struct {
     PyObject_HEAD
     pylame::MP3File *mp3;
 } PyMP3;
+
+
+
 
  PyObject *MP3_new(PyTypeObject *type,PyObject *args,PyObject *keywords);
  void MP3_dealloc(PyMP3 *self);
@@ -24,8 +28,12 @@ typedef struct {
  PyObject * MP3_duration(PyMP3 *self,PyObject *args,PyObject *keywords);
  Py_ssize_t PCM_len(PyMP3 *self);
 
+ PyObject * MP3_data(PyMP3 *self,PyObject *args,PyObject *keywords);
+
  class MP3Manager {
   public:
+	 static const std::map<std::string,pylame::mp3::ID3Versions> ID3Modes;
+
  	 MP3Manager() {};
 
  	 bool isReady();

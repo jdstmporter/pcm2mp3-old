@@ -25,7 +25,7 @@ configuration=read_configuration('setup.cfg')
 metadata=configuration['metadata']
 
 
-libsrc=['MP3Encoder.cpp','PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
+libsrc=['MP3Encoder.cpp', 'MP3Data.cpp','MP3File.cpp', 'PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
 wsrc.extend(['PCMObject.cpp','Lame.cpp'])

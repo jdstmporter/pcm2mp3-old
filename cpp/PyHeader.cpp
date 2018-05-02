@@ -13,11 +13,10 @@ long toLong(PyObject *obj) {
 	return PyLong_AsLong(obj);
 }
 
-double toDouble(PyObject *obj) {
-	if(!PyBool_Check(obj)) throw std::runtime_error("Object is not a bool");
+bool toBool(PyObject *obj) {
 	return PyObject_IsTrue(obj);
 }
-double toBool(PyObject *obj) {
+double toDouble(PyObject *obj)  {
 	if(!PyFloat_Check(obj)) throw std::runtime_error("Object is not a float");
 	return PyFloat_AsDouble(obj) != 0;
 }
