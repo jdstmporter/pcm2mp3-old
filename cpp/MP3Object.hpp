@@ -30,12 +30,17 @@ typedef struct {
 
  PyObject * MP3_data(PyMP3 *self,PyObject *args,PyObject *keywords);
 
+ int MP3_getBuffer(PyMP3 *self, Py_buffer *view, int flags);
+
+
+
  class MP3Manager {
   public:
 	 static const std::map<std::string,pylame::mp3::ID3Versions> ID3Modes;
 
  	 MP3Manager() {};
 
+ 	 void prepare();
  	 bool isReady();
  	 void inc();
  	 void add(PyObject *m,const char *name);

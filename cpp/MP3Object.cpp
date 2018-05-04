@@ -13,11 +13,7 @@ using namespace pylame::mp3;
 
 
 
-const std::map<std::string,ID3Versions> MP3Manager::ID3Modes = {
-		{"One", ID3Versions::OneOnly },
-		{"Two", ID3Versions::TwoOnly },
-		{"OneAndTwo", ID3Versions::OneAndTwo }
-};
+
 
 PyObject *MP3_new(PyTypeObject *type,PyObject *args,PyObject *keywords) {
 	auto self = (PyMP3 *)type->tp_alloc(type, 0);
@@ -40,55 +36,69 @@ void MP3_dealloc(PyMP3 *self) {
 // Initialisation
 
 
-static char *keywordList[] =
-{
-		"title", "artist", "album", "year", "comment", "track", "genre",
-		"copyright", "original", "id3", "quality", "rate"
-};
+
 
 int MP3_init(PyMP3 *self,PyObject *args,PyObject *keywords) {
-	Py_buffer buffer;
 
-	PyObject *pcmobject=nullptr;
-	const char *title=nullptr;
-	const char *artist=nullptr;
-	const char *album=nullptr;
-	const char *year=nullptr;
-	const char *comment=nullptr;
-	const char *track=nullptr;
-	const char *genre=nullptr;
-	PyObject *copyright=nullptr;
-	PyObject *original=nullptr;
-	unsigned id3mode = static_cast<unsigned>(ID3Versions::OneAndTwo);
 	unsigned bitRate = 64;
 	unsigned quality = 5;
 
-	if(!PyArg_ParseTupleAndKeywords(args, keywords,"o|sssssssiiiiii",keywordList,
-			&pcmobject,&title,&artist,&album,&year,&comment,&track,&genre,
-			&copyright,&original,&id3mode,&quality,&bitRate)) {
-		PyErr_SetString(PyExc_OSError,"Bad arguments to constructor");
+	std::cerr << "About to parse positional arguments" << std::endl;
+
+	if(!PyTuple_Check(args))  {
+		PyErr_SetString(PyExc_OSError,"Arguments are not a tuple");
+		return -1;
+	}
+	if(PyTuple_Size(args)!=1) {
+		PyErr_SetString(PyExc_OSError,"Too few / many positional arguments (wants one)");
+		return -1;
+	}
+	PyPCM *pcm=(PyPCM *)PyTuple_GetItem(args,0);
+	std::cerr << "Completed parsing positional arguments" << std::endl;
+
+	std::cerr << "About to parse keyword arguments" << std::endl;
+	if(!PyDict_Check(keywords)) {
+		PyErr_SetString(PyExc_OSError,"Keywords are not a dictionary");
 		return -1;
 	}
 
+	std::map<std::string,PyObject*> kwargs;
+	Py_ssize_t pos=0;
+	PyObject *key, *value;
+	while(PyDict_Next(keywords,&pos,&key,&value)) {
+		std::string kv=toString(key);
+		kwargs[kv]=value;
+	}
+	std::cerr << "Keys are:" << std::endl;
+	std::for_each(kwargs.begin(),kwargs.end(),[](auto kv) { std::cerr << kv.first << std::endl;});
+
+	std::cerr << "Creating parameter object" << std::endl;
+	try { quality=toLong(kwargs.at("quality")); } catch(...) {}
+	try { bitRate=toLong(kwargs.at("rate")); } catch(...) {}
 	MP3Parameters parameters(quality,bitRate);
-	if(title!=nullptr) parameters[ID3Tag::Title]=title;
-	if(artist!=nullptr) parameters[ID3Tag::Artist]=artist;
-	if(album!=nullptr) parameters[ID3Tag::Album]=album;
-	if(year!=nullptr) parameters[ID3Tag::Year]=year;
-	if(comment!=nullptr) parameters[ID3Tag::Comment]=comment;
-	if(track!=nullptr) parameters[ID3Tag::Track]=track;
-	if(genre!=nullptr) parameters[ID3Tag::Genre]=genre;
 
-	parameters.isCopyright(PyObject_IsTrue(copyright)!=0);
-	parameters.isOriginal(PyObject_IsTrue(original)!=0);
-	parameters.useID3Version(static_cast<ID3Versions>(id3mode));
+	std::cerr << "Setting up ID3 mode" << std::endl;
+	try { parameters.useID3Version(static_cast<ID3Versions>(toLong(kwargs.at("id3")))); } catch(...) {}
 
+	std::cerr << "Setting up ID3 parameter" << std::endl;
+	try { parameters[ID3Tag::Title]=toString(kwargs.at("title")); } catch(...) {}
+	try { parameters[ID3Tag::Artist]=toString(kwargs.at("artist")); } catch(...) {}
+	try { parameters[ID3Tag::Album]=toString(kwargs.at("album")); } catch(...) {}
+	try { parameters[ID3Tag::Year]=toString(kwargs.at("year")); } catch(...) {}
+	try { parameters[ID3Tag::Comment]=toString(kwargs.at("comment")); } catch(...) {}
+	try { parameters[ID3Tag::Track]=toString(kwargs.at("track")); } catch(...) {}
+	try { parameters[ID3Tag::Genre]=toString(kwargs.at("genre")); } catch(...) {}
+
+	std::cerr << "Setting up additional parameters" << std::endl;
+	try { parameters.isCopyright(toBool(kwargs.at("copyright"))); } catch(...) {}
+	try { parameters.isOriginal(toBool(kwargs.at("original"))); } catch(...) {}
+
+	std::cerr << "Completed setting up parameters" << std::endl;
 
 	try {
-		auto pcm=(PyPCM *)pcmobject;
 		if (pcm->pcm == NULL) {
 			PyErr_SetString(PyExc_OSError, "No data in PCM object");
-			return nullptr;
+			return -1;
 		}
 		auto mp3=new pylame::MP3File(parameters);
 		mp3->transcode(pcm->pcm);
@@ -127,10 +137,40 @@ Py_ssize_t MP3_len(PyMP3 *self) {
 PyObject *MP3_data(PyMP3 *self,PyObject *args,PyObject *keywords) {
 	if(self->mp3==NULL) {
 			PyErr_SetString(PyExc_OSError,"No data in MP3 object");
+			return nullptr;
+	}
+	return PyByteArray_FromStringAndSize(reinterpret_cast<const char *>(self->mp3->bytes()),self->mp3->size());
+}
+
+/* Buffer protocol */
+
+int MP3_getBuffer(PyMP3 *self, Py_buffer *view, int flags) {
+	if(self->mp3==NULL) {
+			PyErr_SetString(PyExc_BufferError,"No data in MP3 object");
+			view->obj=nullptr;
 			return -1;
 	}
-	return PyByteArray_FromStringAndSize(self->mp3->bytes(),self->mp3->size());
+	if(flags&PyBUF_WRITABLE) {
+		PyErr_SetString(PyExc_BufferError,"MP3 Object is read-only");
+		return -1;
+	}
+	if(flags&(PyBUF_INDIRECT|PyBUF_STRIDES|PyBUF_ND)) {
+		PyErr_SetString(PyExc_BufferError,"MP3 Object is always contiguous and linear");
+		return -1;
+	}
+	auto buf=reinterpret_cast<const char *>(self->mp3->bytes());
+	auto len=self->mp3->size();
+	if(!PyBuffer_FillInfo(view,(PyObject *)self,(void *)buf,(long)len,1,flags)) {
+		PyErr_SetString(PyExc_BufferError,"Cannot initialise MP3 Buffer");
+		return -1;
+	}
+	view->obj=(PyObject *)self;
+	Py_INCREF(view->obj);
+	return 0;
 }
+
+
+
 
 
 PyMethodDef PyMP3_methods[] = {
@@ -160,6 +200,11 @@ PySequenceMethods PyMP3_sequence = {
 		0,								/* sq_contains */
 		0,								/* sq_inplace_concat */
 		0,								/* sq_inplace_repeat */
+};
+
+PyBufferProcs PyMP3_buffer = {
+		(getbufferproc) MP3_getBuffer,
+		0
 };
 
 const char *PyMP3_Name="pcm2mp3.MP3";
@@ -208,13 +253,29 @@ static PyTypeObject PyMP3_Type = {
 		(newfunc)MP3_new,                 		/* tp_new */
 };
 
-bool PCMManager::isReady() { return PyType_Ready(&PyMP3_Type)>=0; }
-void PCMManager::inc() { Py_INCREF(&PyMP3_Type); }
-void PCMManager::add(PyObject *m,const char *name) {
+const std::map<std::string,ID3Versions> MP3Manager::ID3Modes = {
+		{"ID3v1", ID3Versions::OneOnly},
+		{"ID3v2", ID3Versions::TwoOnly},
+		{"ID3v1_AND_ID3v2", ID3Versions::OneAndTwo}
+};
+
+void MP3Manager::prepare() {
+	auto d=PyDict_New();
+	for(auto it=ID3Modes.begin();it!=ID3Modes.end();it++) {
+		PyDict_SetItemString(d,it->first.c_str(),PyLong_FromLong(static_cast<unsigned>(it->second)));
+	}
+	Py_INCREF(d);
+	PyMP3_Type.tp_dict=d;
+	PyMP3_Type.tp_as_sequence=&PyMP3_sequence;
+	PyMP3_Type.tp_as_buffer=&PyMP3_buffer;
+}
+bool MP3Manager::isReady() { return PyType_Ready(&PyMP3_Type)>=0; }
+void MP3Manager::inc() { Py_INCREF(&PyMP3_Type); }
+void MP3Manager::add(PyObject *m,const char *name) {
 	PyModule_AddObject(m,name,(PyObject *)&PyMP3_Type);
 }
-PyPCM * PCMManager::make() {
-	return (PyPCM *)_PyObject_New(&PyMP3_Type);
+PyMP3 * MP3Manager::make() {
+	return (PyMP3 *)_PyObject_New(&PyMP3_Type);
 }
 
 

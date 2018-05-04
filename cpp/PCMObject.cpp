@@ -95,7 +95,7 @@ PyObject *PCM_duration(PyPCM *self,PyObject *args,PyObject *keywords) {
 	}
 	return PyFloat_FromDouble(self->pcm->duration());
 }
-PyObject *PCM_fileType(PyPCM *self,PyObject *args,PyObject *keywords) {
+PyObject *PCM_format(PyPCM *self,PyObject *args,PyObject *keywords) {
 	if(self->pcm==NULL) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;

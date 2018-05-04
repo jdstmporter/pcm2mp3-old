@@ -28,7 +28,7 @@ metadata=configuration['metadata']
 libsrc=['MP3Encoder.cpp', 'MP3Data.cpp','MP3File.cpp', 'PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
 wsrc=['lib/'+s for s in libsrc]
-wsrc.extend(['PCMObject.cpp','Lame.cpp'])
+wsrc.extend(['PCMObject.cpp','MP3Object.cpp','Lame.cpp','PyHeader.cpp'])
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():

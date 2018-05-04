@@ -6,6 +6,62 @@ A very simple module that converts PCM audio data in WAV, AIFF or AIFC files to 
 
 The module is basically a lightweight wrapper around the LAME_ transcoder library, hiding much of the complexity (and the advanced functionality).  The purpose of the exercise is to be *quick* and *simple*.
 
+Classes
+-------
+
+``pcm2mp3.PCM``
+
+
+Class encapsulating a PCM audio file.  Supported file types are the standard types for uncompressed
+audio: **WAV**, **AIFF** and **AIFC**.  The following audio data types are supported:
+
+* One or two channels (Mono or Stereo)
+* Linear PCM encoded as 16 or 32 bit linear integers, or as 32 bit IEEE Floating Point  (floating point   data need not be normalised to lie between -1 and +1)
+
+``class`` **PCM** (*bytes*)
+
+  Constructs a **PCM** object from data comprising a PCM audio file.  Throws exceptions (of varying
+  kinds) of the data does not represent a **WAV**, **AIFF** or **AIFC** file with appropriate
+  underlying data, or is, in some other way, invalid.
+
+  :bytes:
+     A byte-like object (e.g. ``bytes``) containing the byte-stream making up a PCM audio file of
+     one of the supported types
+
+``PCM`` . **sampleRate** ()
+
+   Returns the file's sample rate (in samples per second).
+
+``PCM`` . **nSamples** ()
+
+   Returns the number of samples in the file.
+
+``PCM`` . **duration** ()
+
+   Returns the duration of each channel of the file in seconds`.
+
+``PCM`` . **nChannels** ()
+
+   Returns the file's number of channels (1 for mono, 2 for stereo).
+
+``PCM`` . **format** ()
+
+Returns a formatted string representing the file's data format.  The string is formatted as
+"*filetype* *sampletype*" where *filetype* is one of ``WAV``, ``AIFF`` or ``AIFC``, depending on the
+file format, and *sampletype* is one of ``Int16``, ``Int32`` or ``Float32``, depending on the data
+format.
+
+So, for example, if ``b`` is a byte-like object containing the data from a **WAV** file with stereo data encoded as 16 bit integers, then
+
+  >>> wfile=pcm2mp3.PCM(b)
+  >>> wfile.nChannels()
+  2
+  >>> wfile.format())
+  "WAV Int16"
+
+``pcm2mp3.MP3``
+
+
 Functions
 ---------
 

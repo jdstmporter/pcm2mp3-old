@@ -26,16 +26,18 @@ public:
 	virtual ~MP3File() = default;
 
 	void transcode(pcm::PCMFile *pcm);
+	void transcode(const pcm::file_t &pcm);
 	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
 	cdata_t::const_iterator cend() const { return out.cend(); };
 	double getDuration() const { return duration; };
 	unsigned getRate() const { return parameters.Rate(); };
 	unsigned size() const { return (unsigned)out.size(); };
 	const unsigned char * bytes() const { return out.data(); };
+	const char *chars() const { return reinterpret_cast<const char *>(out.data()); };
 };
 
 } /* namespace pylam */
 
-
+std::ostream & operator<<(std::ostream &o,const pylame::MP3File &mp3);
 
 #endif /* MP3FILE_HPP_ */

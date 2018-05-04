@@ -6,6 +6,7 @@
  */
 
 #include "transcoder.hpp"
+#include "MP3File.hpp"
 
 namespace pylame {
 
@@ -42,17 +43,16 @@ Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate
 	}
 	else throw MP3Error("Unrecognised file format");
 
-	mp3::MP3Encoder trans(infile,quality,rate);
-	trans.transcode();
-	out.assign(trans.cbegin(),trans.cend());
+	MP3File mp3(quality,rate);
+	mp3.transcode(infile.get());
+	out.assign(mp3.cbegin(),mp3.cend());
 
 }
 
 Transcode::Transcode(pcm::PCMFile *pcm,const unsigned quality,const unsigned rate) : out() {
-	std::shared_ptr<pcm::PCMFile> infile(pcm);
-	mp3::MP3Encoder trans(infile,quality,rate);
-	trans.transcode();
-	out.assign(trans.cbegin(),trans.cend());
+	MP3File mp3(quality,rate);
+	mp3.transcode(pcm);
+	out.assign(mp3.cbegin(),mp3.cend());
 }
 
 const char* Transcode::ptr() const {

@@ -17,4 +17,12 @@ void MP3File::transcode(pcm::PCMFile *pcm) {
 	duration=pcm->duration();
 }
 
+void MP3File::transcode(const pcm::file_t &pcm) {
+	transcode(pcm.get());
+}
+
 } /* namespace pylam */
+
+std::ostream & operator<<(std::ostream &o,const pylame::MP3File &mp3) {
+	return o.write(mp3.chars(),mp3.size());
+}

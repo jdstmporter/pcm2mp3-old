@@ -5,7 +5,7 @@
  *      Author: julianporter
  */
 
-#import "PyHeader.hpp"
+#include "PyHeader.hpp"
 
 
 long toLong(PyObject *obj) {
@@ -28,3 +28,5 @@ std::string toString(PyObject *obj) {
 	if(c==NULL) throw std::runtime_error("Could not convert as String");
 	return std::string(c,size);
 }
+
+
