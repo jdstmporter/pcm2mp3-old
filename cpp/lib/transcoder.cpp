@@ -33,27 +33,40 @@ std::shared_ptr<pcm::PCMFile> make(const data_t &in) {
 	return std::static_pointer_cast<pcm::PCMFile>(p);
 }
 
-Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
-	std::shared_ptr<pcm::PCMFile> infile;
+pcm::PCMFile * select(const data_t &in) {
 	if(pcm::WAVFile::isInstance(in)) {
-		infile=make<pcm::WAVFile>(in);
-	}
-	else if(pcm::AIFFFile::isInstance(in)) {
-		infile=make<pcm::AIFFFile>(in);
-	}
-	else throw MP3Error("Unrecognised file format");
+			//std::cerr << "Is WAVFile" << std::endl;
+			return new pcm::WAVFile(in);
+		}
+		else if(pcm::AIFFFile::isInstance(in)) {
+			//std::cerr << "Is AIFFFile" << std::endl;
+			return new pcm::AIFFFile(in);
+		}
+		else throw MP3Error("Unrecognised file format");
+}
 
+
+Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
+	std::shared_ptr<pcm::PCMFile> infile(select(in));
+
+	//std::cout << "Got infile ; setting parameters" << std::endl;
 	MP3File mp3(quality,rate);
-	mp3.transcode(infile.get());
+	//std::cout << "Loading and transcoding file" << std::endl;
+	mp3.transcode(infile);
+	//std::cout << "Transcoded" << std::endl;
 	out.assign(mp3.cbegin(),mp3.cend());
+	//std::cout << "Initialisation complete" << std::endl;
 
 }
 
-Transcode::Transcode(pcm::PCMFile *pcm,const unsigned quality,const unsigned rate) : out() {
+
+Transcode::Transcode(const pcm::file_t &pcm,const unsigned quality,const unsigned rate) : out() {
 	MP3File mp3(quality,rate);
 	mp3.transcode(pcm);
 	out.assign(mp3.cbegin(),mp3.cend());
 }
+
+
 
 const char* Transcode::ptr() const {
 	const unsigned char *u=out.data();

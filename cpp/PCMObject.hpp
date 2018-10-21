@@ -15,7 +15,7 @@
 
 typedef struct {
     PyObject_HEAD
-    pylame::pcm::PCMFile *pcm;
+    pylame::pcm::file_t pcm;
 } PyPCM;
 
  PyObject *PCM_new(PyTypeObject *type,PyObject *args,PyObject *keywords);

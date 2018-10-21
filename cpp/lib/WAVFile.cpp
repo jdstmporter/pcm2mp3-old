@@ -88,9 +88,9 @@ PCMData WAVFile::bytes() {
 	return PCMData(sampleFormat(),nChannels,nSamples,it);
 }
 
-bool WAVFile::isInstance(const data_t &d) {
+bool WAVFile::isInstance(std::istream &stream) {
 		try {
-			WAVFile w(d);
+			WAVFile w(stream);
 			return true;
 		}
 		catch(std::exception &e) {
@@ -98,9 +98,10 @@ bool WAVFile::isInstance(const data_t &d) {
 			return false;
 		}
 	};
-bool WAVFile::isInstance(std::istream &stream) {
+bool WAVFile::isInstance(const data_t &file) {
 		try {
-			WAVFile w(stream);
+			Iterator32 it(file,Endianness::LittleEndian);
+			WAVFile().parse(it,"FMT ","DATA");
 			return true;
 		}
 		catch(std::exception &e) {

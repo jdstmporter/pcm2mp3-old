@@ -12,6 +12,7 @@
 #include "PCMFile.hpp"
 #include "Iterator32.hpp"
 #include "DataChunk.hpp"
+#include <iostream>
 
 namespace pylame { namespace pcm {
 
@@ -30,9 +31,12 @@ protected:
 
 public:
 	
+	WAVFile() : PCMFile() {};
 	WAVFile(const data_t &file_);
 	WAVFile(std::istream & stream);
-	virtual ~WAVFile() = default;
+	virtual ~WAVFile() {
+		if(file.size()>0) { std::cerr << "Deleting WAVFile " << this << std::endl; }
+	}
 
 	
 	virtual PCMData bytes(); // Gives interleaved data

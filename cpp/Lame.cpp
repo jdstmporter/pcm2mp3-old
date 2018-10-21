@@ -25,43 +25,7 @@ static PyObject *mp3Error;
 const char* ModuleName="pcm2mp3";
 const char* ErrorName="MP3Error";
 
-std::vector<char *> keywordsF{"","","bitrate","quality",NULL};
-std::vector<char *> keywordsS{"","bitrate","quality",NULL};
-
-
-bool checkName(const char *name,const char *suffix) {
-	std::stringstream s;
-	s << ".*\\." << suffix << "$";
-	return std::regex_match(name,std::regex(s.str()));
-}
-
-static PyObject * mp3file(PyObject *self, PyObject *args, PyObject *keywds) {
-	const char *inFile;
-	const char *outFile;
-	unsigned bitRate = 64;
-	unsigned quality = 5;
-
-	try {
-
-		if(!PyArg_ParseTupleAndKeywords(args,keywds,"ss|$II",keywordsF.data(),&inFile,&outFile,&bitRate,&quality)) {
-			throw PException(PyExc_TypeError,"API is transcode(infile,outfile,bitrate=64,quality=5)");
-		}
-		try {
-			std::ifstream wavFile(inFile,std::ifstream::binary);
-			pylame::Transcode transcode(wavFile,quality,bitRate);
-			std::ofstream out(outFile,std::ofstream::binary);
-			out << transcode;
-			out.close();
-			return PyLong_FromUnsignedLong((unsigned long)transcode.size());
-		}
-		catch(std::exception &e) {
-			throw PException(mp3Error,e.what());
-		}
-	}
-	catch(PException & p) {
-		return p();
-	}
-}
+static const char *keywords[] = {"","bitrate","quality",NULL};
 
 static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 	unsigned bitRate = 64;
@@ -69,13 +33,14 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 	Py_buffer buffer;
 
 	try {
-		if(!PyArg_ParseTupleAndKeywords(args,keywds,"y*|$II",keywordsS.data(),&buffer,&bitRate,&quality)) {
+		if(!PyArg_ParseTupleAndKeywords(args,keywds,"y*|$II",(char **)keywords,&buffer,&bitRate,&quality)) {
 			throw PException(PyExc_TypeError,"API is transcode(stream,bitrate=64,quality=5)");
 		}
 		try {
 			char *orig=(char *)buffer.buf;
 			pylame::data_t data(orig,orig+buffer.len);
 			pylame::Transcode transcode(data,quality,bitRate);
+			std::cerr << "Transcode call completed: making output";
 			auto out = Py_BuildValue("y#",transcode.ptr(),transcode.size());
 			PyBuffer_Release(&buffer);
 			return out;
@@ -90,12 +55,8 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 }
 
 
-
-
-
 static struct PyMethodDef methods[] = {
-		{"transcodeF",(PyCFunction) mp3file, METH_VARARGS | METH_KEYWORDS, "Transcode file"},
-		{"transcodeS",(PyCFunction) mp3stream, METH_VARARGS | METH_KEYWORDS, "Transcode bytes"},
+		{"transcode",(PyCFunction) mp3stream, METH_VARARGS | METH_KEYWORDS, "Transcode bytes"},
 		{NULL, NULL, 0, NULL}
 };
 

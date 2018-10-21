@@ -41,8 +41,10 @@ protected:
 	virtual void soundChunk(const std::shared_ptr<DataChunk> &chunk) { throw MP3Error("Not implemented"); };
 	virtual void parse(Iterator32 &it,const std::string &info,const std::string &sound);
 
+
+
 	virtual std::string FormHeader() const { throw MP3Error("Not implemented"); };
-	virtual FormMetaData::TypeMap FormTypes() const { throw MP3Error("Not implemented"); };
+	virtual FormMetaData::TypeMap FormTypes() const  { throw MP3Error("Not implemented"); };
 
 
 
@@ -50,8 +52,12 @@ public:
 
 	PCMFile() : format(DataFormat::PCM), file(), form()  {};
 	PCMFile(const data_t &file_) : format(DataFormat::PCM), file(file_), form()  {};
+	PCMFile(PCMFile &&) = default;
+	PCMFile(const PCMFile &) = default;
 	PCMFile(std::istream &stream);
 	virtual ~PCMFile() = default;
+	PCMFile & operator=(PCMFile &&) = default;
+	PCMFile & operator=(const PCMFile &) = default;
 
 	virtual int bitRate() { return nChannels*sampleRate*bytesPerSample*8; };
 	MPEG_mode mp3Mode() { return nChannels==1 ? MONO : JOINT_STEREO; };
@@ -74,10 +80,11 @@ public:
 
 
 
+
+
 };
 
 using file_t = std::shared_ptr<PCMFile>;
-
 
 }}
 

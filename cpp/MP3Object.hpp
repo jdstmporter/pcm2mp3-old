@@ -13,9 +13,11 @@
 #include "lib/MP3File.hpp"
 #include "lib/MP3Data.hpp"
 
+using mp3_t = std::shared_ptr<pylame::MP3File>;
+
 typedef struct {
     PyObject_HEAD
-    pylame::MP3File *mp3;
+    mp3_t mp3;
 } PyMP3;
 
 

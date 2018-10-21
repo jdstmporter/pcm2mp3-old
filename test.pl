@@ -12,6 +12,8 @@ use Carp;
 #rm -fr dist
 #rm -fr pcm2mp3.egg-info
 
+my $arg=shift @ARGV;
+
 `sudo rm -fr /usr/local/lib/python3.6/dist-packages/pcm2mp3*`; 
 `rm -fr /home/julianporter/.cache/Python-Eggs/pcm2mp3*`;
 `python3 setup.py build`;
@@ -20,13 +22,15 @@ use Carp;
 my $pwd = cwd;
 
 chdir "/";
-`sudo tar xzf /opt/projects/singlr/pcm2mp3/dist/pcm2mp3-1.9.linux-x86_64.tar.gz`;
+`sudo tar xzf /opt/projects/singlr/pcm2mp3/dist/pcm2mp3-1.10.linux-x86_64.tar.gz`;
 chdir $pwd;
 
-
-my $out=`python3 test.py`;
+`rm test.mp3`;
+say "Implementing test";
+my $out=`python3 test.py $arg`;
 say $out;
 
+say "Checking output";
 say `mp3check -v -l test.mp3`;
 
 

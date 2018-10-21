@@ -15,6 +15,11 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
+
+
+#define DEBUG
+
 
 class PException : public std::exception {
 private:

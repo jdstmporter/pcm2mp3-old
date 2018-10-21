@@ -15,7 +15,7 @@ using namespace pylame::pcm;
 PyObject *PCM_new(PyTypeObject *type,PyObject *args,PyObject *keywords) {
 	auto self = (PyPCM *)type->tp_alloc(type, 0);
 	if (self != NULL) {
-		self->pcm = NULL;
+		self->pcm = file_t();
 	}
 	return (PyObject *)self;
 }
@@ -23,11 +23,16 @@ PyObject *PCM_new(PyTypeObject *type,PyObject *args,PyObject *keywords) {
 // Release
 
 void PCM_dealloc(PyPCM *self) {
-	if(self->pcm) {
-		delete self->pcm;
+	try {
+		std::cerr << "PCM: Deallocating " << (self->pcm) << std::endl;
+		std::cerr << "    Freeing object" << std::endl;
+		auto p=(PyObject *)self;
+		p->ob_type->tp_free(p);
 	}
-	auto p=(PyObject *)self;
-	p->ob_type->tp_free(p);
+	catch(std::exception &e) {
+		std::cerr << "    Something went wrong " << e.what() << std::endl;
+	}
+	std::cerr << "    Deallocated" << std::endl;
 }
 
 // Initialisation
@@ -44,14 +49,14 @@ int PCM_init(PyPCM *self,PyObject *args,PyObject *keywords) {
 	try {
 		char *orig=(char *)buffer.buf;
 		pylame::data_t data(orig,orig+buffer.len);
-		PCMFile *pcm=nullptr;
+		file_t pcm;
 		if(WAVFile::isInstance(data)) {
-			pcm=(PCMFile *)new WAVFile(data);
+			pcm=std::static_pointer_cast<PCMFile,WAVFile>(std::make_shared<WAVFile>(data));
 		}
 		else if(AIFFFile::isInstance(data)) {
-			pcm=(PCMFile *)new AIFFFile(data);
+			pcm=std::static_pointer_cast<PCMFile,AIFFFile>(std::make_shared<AIFFFile>(data));
 		}
-		if(pcm==NULL) {
+		if(!pcm) {
 			PyErr_SetString(PyExc_OSError,"Cannot initialise PCM object: unknown file type");
 			return -1;
 		}
@@ -66,7 +71,7 @@ int PCM_init(PyPCM *self,PyObject *args,PyObject *keywords) {
 }
 
 PyObject *PCM_sampleRate(PyPCM *self,PyObject *args,PyObject *keywords) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;
 	}
@@ -74,7 +79,7 @@ PyObject *PCM_sampleRate(PyPCM *self,PyObject *args,PyObject *keywords) {
 }
 
 PyObject *PCM_nChannels(PyPCM *self,PyObject *args,PyObject *keywords) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;
 	}
@@ -82,21 +87,21 @@ PyObject *PCM_nChannels(PyPCM *self,PyObject *args,PyObject *keywords) {
 }
 
 PyObject *PCM_nSamples(PyPCM *self,PyObject *args,PyObject *keywords) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;
 	}
 	return PyLong_FromUnsignedLong((unsigned long)self->pcm->samplesPerChannel());
 }
 PyObject *PCM_duration(PyPCM *self,PyObject *args,PyObject *keywords) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;
 	}
 	return PyFloat_FromDouble(self->pcm->duration());
 }
 PyObject *PCM_format(PyPCM *self,PyObject *args,PyObject *keywords) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 		PyErr_SetString(PyExc_OSError,"No data in PCM object");
 		return nullptr;
 	}
@@ -106,7 +111,7 @@ PyObject *PCM_format(PyPCM *self,PyObject *args,PyObject *keywords) {
 	return PyUnicode_DecodeUTF8(st.c_str(),st.length(),nullptr);
 }
 Py_ssize_t PCM_len(PyPCM *self) {
-	if(self->pcm==NULL) {
+	if(!self->pcm) {
 			PyErr_SetString(PyExc_OSError,"No data in PCM object");
 			return -1;
 	}
@@ -114,7 +119,7 @@ Py_ssize_t PCM_len(PyPCM *self) {
 }
 
 PyObject *PCM_transcode(PyPCM *self, PyObject *args, PyObject *keywords) {
-	if (self->pcm == NULL) {
+	if (!self->pcm) {
 		PyErr_SetString(PyExc_OSError, "No data in PCM object");
 		return nullptr;
 	}

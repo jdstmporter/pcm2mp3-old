@@ -40,6 +40,8 @@ MP3Encoder::MP3Encoder(const pcm::file_t &data_,const MP3Parameters &parameters)
 
 }
 
+
+
 	
 MP3Encoder::~MP3Encoder() {
 	lame_close(gf);

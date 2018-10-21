@@ -22,9 +22,9 @@ DataFormat AIFFFile::convertFormat(const std::string &f) {
 	    else throw MP3Error("Unknown AIFC data format");
 }
 
-std::string AIFFFile::FormHeader() const { return "FORM"; };
+std::string AIFFFile::FormHeader() const  { return "FORM"; };
 
-FormMetaData::TypeMap AIFFFile::FormTypes() const {
+FormMetaData::TypeMap AIFFFile::FormTypes() const  {
 		return {
 			{"AIFF",FileType::AIFF},
 			{"AIFC",FileType::AIFC}

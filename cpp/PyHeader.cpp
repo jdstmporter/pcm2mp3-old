@@ -6,6 +6,8 @@
  */
 
 #include "PyHeader.hpp"
+#include <sstream>
+
 
 
 long toLong(PyObject *obj) {

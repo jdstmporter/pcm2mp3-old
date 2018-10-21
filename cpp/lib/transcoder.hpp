@@ -32,8 +32,8 @@ public:
 	Transcode(const data_t &in,const unsigned quality,const unsigned rate) ;
 	Transcode(std::istream &in,const unsigned quality,const unsigned rate) :
 		Transcode(load(in),quality,rate) {};
-	Transcode(pcm::PCMFile *pcm,const unsigned quality,const unsigned rate);
-	virtual ~Transcode() = default;
+	Transcode(const pcm::file_t &pcm,const unsigned quality,const unsigned rate);
+	virtual ~Transcode() { std::cerr << "Deleting transcoder" << std::endl; };
 	
 	cdata_t::const_iterator cbegin() const { return out.cbegin(); };
 	cdata_t::const_iterator cend() const { return out.cend(); };

@@ -18,8 +18,15 @@ void MP3File::transcode(pcm::PCMFile *pcm) {
 }
 
 void MP3File::transcode(const pcm::file_t &pcm) {
-	transcode(pcm.get());
+	mp3::MP3Encoder trans(pcm,parameters);
+	trans.transcode();
+	out.assign(trans.cbegin(),trans.cend());
+	duration=pcm->duration();
 }
+
+
+
+
 
 } /* namespace pylam */
 
