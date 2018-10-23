@@ -64,5 +64,6 @@ with open('README.rst') as readme:
 setup (
     cmdclass = {'cleaner' : utils.Cleaner },
     ext_modules = [coder],
-    long_description = longDescription 
+    long_description = longDescription,
+    test_suite = 'nose.collector' 
 )

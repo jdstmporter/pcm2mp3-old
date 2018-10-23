@@ -50,9 +50,6 @@ $(TEST_LIBS) : $(TEST_OBJ)
 	$(AR) cr $@ $^
 	$(RANLIB) $@
 
-.PHONY: clib
-clib : $(TEST_OBJ) cpp/test/check.o
-	$(CXX) -shared -o libcmp3.so $(TEST_OBJ) cpp/test/check.o
 
 
 clean:
