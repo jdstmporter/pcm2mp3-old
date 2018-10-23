@@ -24,11 +24,14 @@ if not checker.run():
 configuration=read_configuration('setup.cfg')
 metadata=configuration['metadata']
 
+wsrc=[]
 
 libsrc=['MP3Encoder.cpp', 'MP3Data.cpp','MP3File.cpp', 'PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
         'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
-wsrc=['lib/'+s for s in libsrc]
-wsrc.extend(['PCMObject.cpp','MP3Object.cpp','Lame.cpp','PyHeader.cpp'])
+tstsrc=['MP3.cpp','MP3File.cpp','MP3Frame.cpp','Test.cpp']
+wsrc.extend([f'lib/{s}' for s in libsrc])
+wsrc.extend([f'test/{s}' for s in tstsrc])
+wsrc.extend(['MP3TestObject.cpp','PCMObject.cpp','MP3Object.cpp','Lame.cpp','PyHeader.cpp'])
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():
@@ -41,10 +44,12 @@ def makeExtension(module,src):
     #print("Making {} with {}".format(module,src))
     
     v=processVersion()
+    mv=f'"{v.major}.{v.minor}.{v.maintenance}"'
     return Extension(module,
                     define_macros = [('MAJOR_VERSION', v.major),
                                      ('MINOR_VERSION', v.minor),
-                                     ('MAINTENANCE_VERSION', v.maintenance)],
+                                     ('MAINTENANCE_VERSION', v.maintenance),
+                                     ('MODULE_VERSION', mv)],
                     sources = ['cpp/'+s for s in src],
                     language = 'c++',
                     include_dirs=['/usr/include'],

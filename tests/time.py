@@ -4,7 +4,7 @@ Created on 5 Dec 2017
 @author: julianporter
 '''
 
-from wav2mp3 import transcode
+from pcm2mp3 import transcode
 from time import perf_counter
 from sys import argv
 

@@ -51,6 +51,8 @@ public:
 	void write(lame_global_flags *gf) const;
 };
 
+
+
 }}
 
 

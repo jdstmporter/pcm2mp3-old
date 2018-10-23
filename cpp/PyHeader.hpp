@@ -37,8 +37,11 @@ public:
 };
 
 long toLong(PyObject *obj);
+PyObject *fromULong(const unsigned long);
+PyObject *fromUInt(const unsigned);
 double toLDouble(PyObject *obj);
 std::string toString(PyObject *obj);
+PyObject *fromString(const std::string &s);
 bool toBool(PyObject *obj);
 
 #endif /* MODULE_CPP_PYHEADER_HPP_ */

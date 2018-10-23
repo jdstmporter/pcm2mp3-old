@@ -18,6 +18,7 @@
 #include "lib/lamer.hpp"
 #include "PCMObject.hpp"
 #include "MP3Object.hpp"
+#include "MP3TestObject.hpp"
 
 
 static PyObject *mp3Error;
@@ -54,9 +55,33 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 	}
 }
 
+static PyObject * mp3check(PyObject *self, PyObject *args, PyObject *keywds) {
+	try {
+		if(!PyTuple_Check(args))  {
+				throw PException(PyExc_OSError,"Arguments are not a tuple");
+		}
+		if(PyTuple_Size(args)!=1) {
+			throw PException(PyExc_OSError,"Too few / many positional arguments (wants one)");
+		}
+		std::string filename=toString(PyTuple_GetItem(args,0));
+		try {
+			mp3::Test test(filename);
+			test.parse();
+			if(test.isGood()) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }
+		}
+		catch(std::exception &e) {
+			throw PException(mp3Error,e.what());
+		}
+	}
+	catch (PException &p) {
+		return p();
+	}
+}
+
 
 static struct PyMethodDef methods[] = {
 		{"transcode",(PyCFunction) mp3stream, METH_VARARGS | METH_KEYWORDS, "Transcode bytes"},
+		{"mp3Check", (PyCFunction) mp3check , METH_VARARGS, "Check MP3 file"},
 		{NULL, NULL, 0, NULL}
 };
 
@@ -89,6 +114,9 @@ PyMODINIT_FUNC PyInit_pcm2mp3(void) {
 		auto result=PyModule_AddObject(m,ErrorName,mp3Error);
 		if(result<0) throw std::runtime_error("Cannot attach MP3Error to module");
 
+#ifdef MODULE_VERSION
+		PyModule_AddStringConstant(m,"__version__",MODULE_VERSION);
+#endif
 
 	    PCMManager mgr;
 	    //inotify_WatcherType.tp_new = PyType_GenericNew;
@@ -105,6 +133,11 @@ PyMODINIT_FUNC PyInit_pcm2mp3(void) {
 	    for(auto it=MP3Manager::ID3Modes.begin();it!=MP3Manager::ID3Modes.end();it++) {
 	    	PyModule_AddIntConstant(m,it->first.c_str(),static_cast<unsigned>(it->second));
 	    }
+
+	    MP3TestManager tst;
+	    if (!tst.isReady()) throw std::runtime_error("Cannot attach MP3 Check to module");
+	    tst.inc();
+	    tst.add(m,"MP3Check");
 
 		return m;
 	}

@@ -15,6 +15,14 @@ long toLong(PyObject *obj) {
 	return PyLong_AsLong(obj);
 }
 
+PyObject *fromULong(const unsigned long l) {
+	return PyLong_FromUnsignedLong(l);
+}
+
+PyObject *fromUInt(const unsigned l) {
+	return fromULong((unsigned long )l);
+}
+
 bool toBool(PyObject *obj) {
 	return PyObject_IsTrue(obj);
 }
@@ -29,6 +37,9 @@ std::string toString(PyObject *obj) {
 	auto c=PyUnicode_AsUTF8AndSize(obj,&size);
 	if(c==NULL) throw std::runtime_error("Could not convert as String");
 	return std::string(c,size);
+}
+PyObject *fromString(const std::string &s) {
+	return PyUnicode_DecodeUTF8(s.c_str(),s.length(),nullptr);
 }
 
 
