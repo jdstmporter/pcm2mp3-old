@@ -1,20 +1,44 @@
+
+ifeq ($(TGT),lib)
+	SRCDIR := cpp/lib
+	LIBDEPS := -lmp3lame
+	LIBNAME := libpcm2mp3
+	EXENAME := lamer
+else ifeq ($(TGT),test)
+	SRCDIR := cpp/test
+	LIBDEPS := 
+	LIBNAME := libmp3info
+	EXENAME := mp3check
+else 
+	$(error Unknown project target $(TGT))
+endif
+
+
 LIBDIR := lib
+BINDIR := bin
 INCDIR := include
+
+
+
+
+
 
 CXX := g++
 AR := ar
 RANLIB := ranlib
 CXXFLAGS := -std=c++14 -pthread -O3 -g3 -Wall -c -fmessage-length=0 -fPIC
-LKRFLAGS := -lmp3lame
+LKRFLAGS := $(LIBDEPS)
 
-APP_OBJ := $(addprefix cpp/lib/,MP3Encoder.o MP3Data.o MP3File.o Iterator32.o PCMData.o PCMFile.o WAVFile.o AIFFFile.o base.o DataChunk.o Form.o Conversions.o transcoder.o)
-APP_OBJ_ALL := $(APP_OBJ) cpp/lib/main.cpp
-APP_OUT := lamer
 
-TEST_OBJ := $(addprefix cpp/test/,MP3File.o MP3Frame.o MP3.o Test.o)
-TEST_OBJ_ALL := $(TEST_OBJ) cpp/test/mp3.o
-TEST_OUT := mp3
-TEST_LIBS := $(addprefix $(LIBDIR)/,libmp3info.a libmp3info.so)
+LIB := $(addprefix $(LIBDIR)/,$(LIBNAME).so $(LIBNAME).a)
+EXE := $(EXENAME)
+
+makeObjs = $(patsubst %.cpp,%.o,$(filter %.cpp, $(shell find $1 -name *.cpp)))
+OBJ := $(call makeObjs,$(SRCDIR))
+LIB_OBJ := $(filter-out $(SRCDIR)/$(EXE).o, $(OBJ))
+
+
+
 
 MKDIR := mkdir -p
 RM := rm -fr
@@ -22,49 +46,44 @@ CP := cp
 
 
 
-
-
-
-
 .PHONY: all
-all: app test
+all: prepare $(LIB) $(EXE)
+
+.PHONY: lib
+lib : prepare $(LIB)
 
 .PHONY: app
-app: $(APP_OUT)
-
-.PHONY: test
-test : $(TEST_OUT)
-
-.PHONY: testlibs
-testlibs: prepare $(TEST_LIBS)
-
+app : prepare $(EXE)
 
 .PHONY: prepare
 prepare:
+	$(MKDIR) $(BINDIR)
 	$(MKDIR) $(INCDIR)
 	$(MKDIR) $(LIBDIR)
-	$(CP) cpp/test/*.hpp $(INCDIR)
-
-
-$(TEST_LIBS) : $(TEST_OBJ)
-	$(AR) cr $@ $^
-	$(RANLIB) $@
-
+	$(CP) $(SRCDIR)/*.hpp $(INCDIR)
 
 
 clean:
-	cd cpp/lib;$(RM) *.o
-	cd cpp/test;$(RM) *.o
-	cd cpp.mp3;$(RM) *.o
+	$(RM) $(SRCDIR)/*.o
 
-
-$(APP_OUT): $(APP_OBJ_ALL)
-	$(CXX) $(LKRFLAGS) -o $(APP_OUT) $(APP_OBJ_ALL)
+.PHONY: distclean
+distclean: clean
+	$(RM) $(INCDIR)
+	$(RM) $(LIBDIR)
+	$(RM) $(BINDIR)
 	
+.PHONY: list
+list: 
+	$(info Source dir is $(SRCDIR))
+	$(info File list is $(OBJ))
+	$(info Library file list is $(LIB_OBJ))
 
-$(TEST_OUT): $(TEST_OBJ_ALL)
-	$(CXX) $(LKRFLAGS) -o $(TEST_OUT) $(TEST_OBJ_ALL)
+$(EXE): $(OBJ)
+	$(CXX) $(LKRFLAGS) $^ -o $@ 
+	
+$(LIB): $(LIB_OBJ)
+	$(AR) cr $@ $^
+	$(RANLIB) $@
 	
 %.o: %.c
-	cd cpp/lib; $(CXX) $(CXXFLAGS) -c $@ $<
-	cd cpp/test; $(CXX) $(CXXFLAGS) -c $@ $<
+	$(CXX) $(CXXFLAGS) -c $@ $<

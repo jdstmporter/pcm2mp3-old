@@ -20,17 +20,16 @@ public:
 	size_t nsamples;
 	unsigned bitrate;
 	unsigned samplerate;
-	unsigned samplesize;
 	unsigned nframes;
 
+	bool goodSampleRate;
 
-	bool validSampleSize;
 	bool isGood() const;
 
 	std::string message;
 	std::vector<std::string> log;
 
-	TestResult(const std::string &m=""): spec(), duration(0), nsamples(0),bitrate(0),samplerate(0),samplesize(0), nframes(0),validSampleSize(false),message(m), log() {};
+	TestResult(const std::string &m=""): spec(), duration(0), nsamples(0),bitrate(0),samplerate(0),nframes(0),goodSampleRate(false), message(m), log() {};
 	TestResult(const MP3File &file,const bool verbose=false);
 	TestResult(const TestResult &) = default;
 	virtual ~TestResult() = default;

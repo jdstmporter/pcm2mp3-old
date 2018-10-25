@@ -13,9 +13,9 @@ int main(int argc,char *argv[]) {
 
 		std::string infile(argv[1]);
 		mp3::Test test(infile);
-		test.parse(true);
-
-		std::cout << test() << std::endl;
+		test.parse(false);
+		auto result=test();
+		std::cout << *result << std::endl;
 	}
 	catch(std::exception &e) {
 			std::cerr << e.what() << std::endl;

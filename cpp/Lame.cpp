@@ -67,7 +67,9 @@ static PyObject * mp3check(PyObject *self, PyObject *args, PyObject *keywds) {
 		try {
 			mp3::Test test(filename);
 			test.parse();
-			if(test.isGood()) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }
+			auto result=test();
+			std::cout << *result << std::endl;
+			if(result->isGood()) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }
 		}
 		catch(std::exception &e) {
 			throw PException(mp3Error,e.what());

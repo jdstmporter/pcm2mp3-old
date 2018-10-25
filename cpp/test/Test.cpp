@@ -27,10 +27,9 @@ TestResult::TestResult(const MP3File &file,const bool verbose) :
 		bitrate(1000*file.bitrate()),
 		samplerate(file.samplerate()),
 		nframes(file.nframes()),
+		goodSampleRate(bitrate>samplerate),
 		log(verbose ? file.size() : 0) {
 
-	samplesize=bitrate/samplerate;
-	validSampleSize=(bitrate%samplerate)==0;
 
 	message=isGood() ? "PASSED" : "FAILED";
 	if(verbose) {
@@ -40,7 +39,7 @@ TestResult::TestResult(const MP3File &file,const bool verbose) :
 
 
 bool TestResult::isGood() const {
-	return spec.isGood()&&validSampleSize;
+	return spec.isGood() && goodSampleRate;
 }
 
 void Test::parse(const bool verbose) {
@@ -64,8 +63,7 @@ inline std::string _(const bool b) { return b ? "PASS" : "FAIL"; }
 
 std::ostream & operator<<(std::ostream &o,const mp3::TestResult &r) {
 	o << "Header : " << r.spec << " (" << _(r.spec.isGood()) << ")" << std::endl
-			<< "Byte rate: " << r.bitrate << " Sample rate: " << r.samplerate
-			<< " Bits per sample: " << 8*r.samplesize << " (" << _(r.validSampleSize)
+			<< "Byte rate: " << r.bitrate << " Sample rate: " << r.samplerate << " (" << _(r.goodSampleRate)
 			<< ") Duration: " << r.duration << std::endl
 			<< "RESULT (" << _(r.isGood()) <<") : " << r.message << std::endl;
 	return o;
