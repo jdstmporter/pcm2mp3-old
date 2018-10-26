@@ -9,6 +9,7 @@
 
 #include "PCMData.hpp"
 #include <cmath>
+#include <algorithm>
 
 using namespace pylame::pcm;
 
@@ -16,7 +17,7 @@ void PCMData::normaliseArray(float * ptr) {
 	auto bounds=std::minmax_element(ptr,ptr+nSamples);
 	auto min=*bounds.first;
 	auto max=*bounds.second;
-	auto bound=std::max(fabs(min),fabs(max));
+	auto bound=std::max(std::abs(min),std::abs(max));
 	if(bound==0.0) return;
 	auto scale=1.0/bound;
 	for(unsigned i=0;i<nSamples;i++) ptr[i]*=scale;

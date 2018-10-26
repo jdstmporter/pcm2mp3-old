@@ -12,7 +12,7 @@ int main(int argc,char *argv[]) {
 	try {
 
 		std::string infile(argv[1]);
-		mp3::Test test(infile);
+		mp3::MP3Test test(infile);
 		test.parse(false);
 		auto result=test();
 		std::cout << *result << std::endl;

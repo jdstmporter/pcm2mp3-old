@@ -35,7 +35,7 @@ public:
 	WAVFile(const data_t &file_);
 	WAVFile(std::istream & stream);
 	virtual ~WAVFile() {
-		if(file.size()>0) { std::cerr << "Deleting WAVFile " << this << std::endl; }
+		//if(file.size()>0) { std::cerr << "Deleting WAVFile " << this << std::endl; }
 	}
 
 	

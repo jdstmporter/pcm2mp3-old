@@ -16,7 +16,7 @@ endif
 
 LIBDIR := lib
 BINDIR := bin
-INCDIR := include
+INCDIR := include/${LIBNAME}
 
 
 
@@ -65,6 +65,7 @@ prepare:
 
 clean:
 	$(RM) $(SRCDIR)/*.o
+	$(RM) $(INCDIR)/*.hpp
 
 .PHONY: distclean
 distclean: clean
@@ -79,7 +80,7 @@ list:
 	$(info Library file list is $(LIB_OBJ))
 
 $(EXE): $(OBJ)
-	$(CXX) $(LKRFLAGS) $^ -o $@ 
+	$(CXX) $(LKRFLAGS) $^ -o $(BINDIR)/$@ 
 	
 $(LIB): $(LIB_OBJ)
 	$(AR) cr $@ $^

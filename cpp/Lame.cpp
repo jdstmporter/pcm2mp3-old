@@ -41,7 +41,7 @@ static PyObject * mp3stream(PyObject *self, PyObject *args, PyObject *keywds) {
 			char *orig=(char *)buffer.buf;
 			pylame::data_t data(orig,orig+buffer.len);
 			pylame::Transcode transcode(data,quality,bitRate);
-			std::cerr << "Transcode call completed: making output";
+			//std::cerr << "Transcode call completed: making output";
 			auto out = Py_BuildValue("y#",transcode.ptr(),transcode.size());
 			PyBuffer_Release(&buffer);
 			return out;
@@ -65,10 +65,10 @@ static PyObject * mp3check(PyObject *self, PyObject *args, PyObject *keywds) {
 		}
 		std::string filename=toString(PyTuple_GetItem(args,0));
 		try {
-			mp3::Test test(filename);
+			mp3::MP3Test test(filename);
 			test.parse();
 			auto result=test();
-			std::cout << *result << std::endl;
+			std::cout << "Result is " << *result << std::endl;
 			if(result->isGood()) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }
 		}
 		catch(std::exception &e) {

@@ -8,7 +8,7 @@
 #include "MP3File.hpp"
 
 #include <numeric>
-
+#include <iostream>
 
 
 
@@ -39,7 +39,10 @@ MP3File::MP3File(std::istream &stream) : mp3(readBinaryFile(stream)), frames(), 
 
 void MP3File::parse() {
 	MP3Header head=initial.Header();
-	if(head.modeExtension!=0 && head.mode!=1) throw std::runtime_error("Non-zero mode extension when mode is not Joint Stereo");
+	std::cerr << (int)head.mode << " " << (int)head.modeExtension << std::endl;
+	if(head.modeExtension!=0 && head.mode!=static_cast<unsigned>(MPEGMode::JointStereo)) {
+			throw std::runtime_error("Non-zero mode extension when mode is not Joint Stereo");
+	}
 	MP3ValidFrame validator(head);
 
 	while(offset<mp3.size()-MP3::MinimumFrameSize) {
@@ -53,6 +56,7 @@ void MP3File::parse() {
 			offset+=MP3::FrameHeaderSize;
 		}
 	}
+
 }
 
 size_t MP3File::size() const {

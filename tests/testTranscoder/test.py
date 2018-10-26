@@ -4,9 +4,10 @@ Created on 24 Oct 2018
 @author: julianporter
 '''
 
-from nose.tools import ok_
+
 import pcm2mp3
 import os
+
 
 TRANSCODE='transcode'
 CLASS_BASED='classBased'
@@ -16,6 +17,7 @@ CLASS_BASED='classBased'
 class Converter(object):
     
     def __init__(self,name,mode,quality=5,bitrate=16):
+        self.name=name
         self.infile=f'{name}.wav'
         self.outfile=f'{name}.mp3'
         self.quality=quality
@@ -34,8 +36,8 @@ class Converter(object):
             print(f'Check result is {result}')
             return result
         except Exception as e:
-            print(f"Error while checking: {e}")
-            return False
+            raise Exception(f"Error while checking: {e}")
+
             
     def transcode(self,data):
         return pcm2mp3.transcode(data,quality=self.quality,bitrate=self.bitrate)
@@ -55,22 +57,24 @@ class Converter(object):
                 with open(self.outfile,'wb') as outfile:
                     outfile.write(dataOut)
         except Exception as e:
-            print(f'Error while checking {e}')
-            ok_(False)
+            raise Exception(f'Error while checking {e}')
             
     def __call__(self):
-        self.rm()
-        self.convert()
-        out=self.check()
-        print(f'Check result is {out}')
-        ok_(out,f'Test with mode {self.mode} Q {self.quality} B {self.bitrate}')
+        try:
+            print(f'Test with file {self.name} mode {self.mode} Q {self.quality} B {self.bitrate}')
+            self.rm()
+            self.convert()
+            out=self.check()
+            print(f'Check result is {out}')
+            return out
+        except Exception as e:
+            print(f'{e}')
+            return False
         
         
 if __name__ == '__main__':
     from sys import argv
-    
-    
-    
+
     kl=Converter(argv[1],argv[2],quality=5,bitrate=int(argv[3]))
     kl.rm()
     kl.convert()

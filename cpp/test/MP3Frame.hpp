@@ -10,6 +10,9 @@
 
 
 #include "MP3.hpp"
+#ifdef COMPUTE_CRC
+#include "CRC16.hpp"
+#endif
 
 
 namespace mp3 {
@@ -25,8 +28,12 @@ public:
 	virtual ~MP3ValidFrame() = default;
 
 	bool operator()(const MP3Header &h) const {
-		bool valid1=((h.id&0xffe)==0xffe) && (h.layer!=0) && (h.rate!=0xf)
-				&& (h.frequency!=3);
+		bool validID = h.id==0x7ff;
+		bool validHeader = (h.version!=2) && (h.layer!=0);
+		bool validRate = (h.rate!=0xf) && (h.frequency!=3);
+		bool valid1=validID && validHeader && validRate;
+		//bool valid1=((h.id&0xffe)==0xffe) && (h.layer!=0) && (h.rate!=0xf)
+		//		&& (h.frequency!=3);
 		bool valid2=(initial) ? true : (header.mode==h.mode) &&
 				(header.modeExtension==h.modeExtension) &&
 				(header.emphasis==h.emphasis) && (header.layer==h.layer);
@@ -48,13 +55,18 @@ private:
 
 	unsigned bitRate;
 	unsigned sampleRate;
+	bool crc;
 	MP3Header header;
 
 	mdata_t data;
 	offset_t start;
 
+
+
 public:
-	MP3Frame(const mdata_t &data_=mdata_t(),const offset_t start_=0) : mpeg(MPEGVersion::Unknown), layer(MPEGLayer::Unknown), mode(MPEGMode::Unknown), mp3(), offset(0), bitRate(0), sampleRate(0), data(data_), start(start_) {};
+	MP3Frame(const mdata_t &data_=mdata_t(),const offset_t start_=0) :
+		mpeg(MPEGVersion::Unknown), layer(MPEGLayer::Unknown), mode(MPEGMode::Unknown),
+		mp3(), offset(0), bitRate(0), sampleRate(0), crc(false), data(data_), start(start_) {};
 	MP3Frame(const MP3Frame &)=default;
 	MP3Frame & operator=(const MP3Frame &)=default;
 	virtual ~MP3Frame() = default;
@@ -78,6 +90,7 @@ public:
 
 	offset_t fileOffset() const { return offset; }
 	MP3Header Header() const { return header; }
+	bool hasCRC() const { return crc; }
 
 };
 

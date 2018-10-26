@@ -51,8 +51,8 @@ int MP3_init(PyMP3 *self,PyObject *args,PyObject *keywords) {
 	unsigned bitRate = 64;
 	unsigned quality = 5;
 
-	std::cerr << "MP3Object : init" << std::endl;
-	std::cerr << "    About to parse positional arguments" << std::endl;
+	//std::cerr << "MP3Object : init" << std::endl;
+	//std::cerr << "    About to parse positional arguments" << std::endl;
 
 	if(!PyTuple_Check(args))  {
 		PyErr_SetString(PyExc_OSError,"Arguments are not a tuple");
@@ -63,9 +63,9 @@ int MP3_init(PyMP3 *self,PyObject *args,PyObject *keywords) {
 		return -1;
 	}
 	PyPCM *pcm=(PyPCM *)PyTuple_GetItem(args,0);
-	std::cerr << "    Completed parsing positional arguments" << std::endl;
+	//std::cerr << "    Completed parsing positional arguments" << std::endl;
 
-	std::cerr << "    About to parse keyword arguments" << std::endl;
+	//std::cerr << "    About to parse keyword arguments" << std::endl;
 	if(!PyDict_Check(keywords)) {
 		PyErr_SetString(PyExc_OSError,"Keywords are not a dictionary");
 		return -1;
@@ -78,18 +78,18 @@ int MP3_init(PyMP3 *self,PyObject *args,PyObject *keywords) {
 		std::string kv=toString(key);
 		kwargs[kv]=value;
 	}
-	std::cerr << "    Keys are:" << std::endl;
+	//std::cerr << "    Keys are:" << std::endl;
 	std::for_each(kwargs.begin(),kwargs.end(),[](auto kv) { std::cerr << kv.first << std::endl;});
 
-	std::cerr << "    Creating parameter object" << std::endl;
+	//std::cerr << "    Creating parameter object" << std::endl;
 	try { quality=toLong(kwargs.at("quality")); } catch(...) {}
 	try { bitRate=toLong(kwargs.at("rate")); } catch(...) {}
 	MP3Parameters parameters(quality,bitRate);
 
-	std::cerr << "    Setting up ID3 mode" << std::endl;
+	//std::cerr << "    Setting up ID3 mode" << std::endl;
 	try { parameters.useID3Version(static_cast<ID3Versions>(toLong(kwargs.at("id3")))); } catch(...) {}
 
-	std::cerr << "    Setting up ID3 parameter" << std::endl;
+	//std::cerr << "    Setting up ID3 parameter" << std::endl;
 	try { parameters[ID3Tag::Title]=toString(kwargs.at("title")); } catch(...) {}
 	try { parameters[ID3Tag::Artist]=toString(kwargs.at("artist")); } catch(...) {}
 	try { parameters[ID3Tag::Album]=toString(kwargs.at("album")); } catch(...) {}
@@ -98,27 +98,27 @@ int MP3_init(PyMP3 *self,PyObject *args,PyObject *keywords) {
 	try { parameters[ID3Tag::Track]=toString(kwargs.at("track")); } catch(...) {}
 	try { parameters[ID3Tag::Genre]=toString(kwargs.at("genre")); } catch(...) {}
 
-	std::cerr << "    Setting up additional parameters" << std::endl;
+	//std::cerr << "    Setting up additional parameters" << std::endl;
 	try { parameters.isCopyright(toBool(kwargs.at("copyright"))); } catch(...) {}
 	try { parameters.isOriginal(toBool(kwargs.at("original"))); } catch(...) {}
 
-	std::cerr << "    Completed setting up parameters" << std::endl;
+	//std::cerr << "    Completed setting up parameters" << std::endl;
 
 	try {
 		if (!pcm->pcm) {
-			std::cerr << "    Error: No data" << std::endl;
+			//std::cerr << "    Error: No data" << std::endl;
 			PyErr_SetString(PyExc_OSError, "No data in PCM object");
 			return -1;
 		}
 		auto mp3=std::make_shared<pylame::MP3File>(parameters);
-		std::cerr << "    About to transcode" << std::endl;
+		//std::cerr << "    About to transcode" << std::endl;
 		mp3->transcode(pcm->pcm);
-		std::cerr << "    Transcoding completed" << std::endl;
+		//std::cerr << "    Transcoding completed" << std::endl;
 		self->mp3=mp3;
 		return 0;
 	}
 	catch(std::exception &e) {
-		std::cerr << "    Error: Error while loading file and transcoding" << std::endl;
+		//std::cerr << "    Error: Error while loading file and transcoding" << std::endl;
 		PyErr_SetString(PyExc_OSError,e.what());
 		return -1;
 	}

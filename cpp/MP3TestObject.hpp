@@ -14,7 +14,7 @@
 #include "test/MP3Frame.hpp"
 #include "test/Test.hpp"
 
-using test_t = std::shared_ptr<mp3::TestResult>;
+using test_t = std::shared_ptr<mp3::MP3TestResult>;
 
 typedef struct {
     PyObject_HEAD

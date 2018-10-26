@@ -24,15 +24,15 @@ PyObject *PCM_new(PyTypeObject *type,PyObject *args,PyObject *keywords) {
 
 void PCM_dealloc(PyPCM *self) {
 	try {
-		std::cerr << "PCM: Deallocating " << (self->pcm) << std::endl;
-		std::cerr << "    Freeing object" << std::endl;
+		//std::cerr << "PCM: Deallocating " << (self->pcm) << std::endl;
+		//std::cerr << "    Freeing object" << std::endl;
 		auto p=(PyObject *)self;
 		p->ob_type->tp_free(p);
 	}
 	catch(std::exception &e) {
-		std::cerr << "    Something went wrong " << e.what() << std::endl;
+		//std::cerr << "    Something went wrong " << e.what() << std::endl;
 	}
-	std::cerr << "    Deallocated" << std::endl;
+	//std::cerr << "    Deallocated" << std::endl;
 }
 
 // Initialisation

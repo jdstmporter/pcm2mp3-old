@@ -23,8 +23,9 @@
 namespace mp3 {
 
 enum class MPEGVersion : unsigned {
-	MPEG2 = 0,
-	MPEG1 = 1,
+	MPEG25  = 0, // 0xb00,
+	MPEG2   = 1, // 0xb01,
+	MPEG1   = 3, // 0xb11,
 	Unknown = 255
 };
 
@@ -37,31 +38,37 @@ enum class MPEGLayer : unsigned {
 
 enum class MPEGMode : unsigned {
 	Stereo=0,
-	JointStereo=1,
-	DualChannel=2,
+	JointStereo=2,
+	DualChannel=1,
 	Mono=3,
 	Unknown=255
 };
 
 struct MP3Header {
-	unsigned emphasis : 2;
-	unsigned original : 1;
-	unsigned copyright : 1;
-	unsigned modeExtension : 2;
-	unsigned mode : 2;
-	unsigned extension : 1;
-	unsigned pad : 1;
-	unsigned frequency : 2;
-	unsigned rate : 4;
-	unsigned crc : 1;
-	unsigned layer : 2;
-	unsigned version : 1;
-	unsigned id : 12;
+	/*
+	 * AAAAAAAA AAABBCCD EEEEFFGH IIJJKLMM
+	 */
+
+	unsigned emphasis : 2;			// M
+	unsigned original : 1;			// L
+	unsigned copyright : 1;			// K
+	unsigned modeExtension : 2;		// J
+	unsigned mode : 2;				// I
+	unsigned extension : 1;			// H
+	unsigned pad : 1;				// G
+	unsigned frequency : 2;			// F
+	unsigned rate : 4;				// E
+	unsigned crc : 1;				// D
+	unsigned layer : 2;				// C
+	unsigned version : 2;			// B
+	unsigned id : 11;				// A
 };
 
 using mdata_t = std::vector<char>;
 using size_t = unsigned long;
 using offset_t = unsigned long;
+
+
 
 struct MPEGSpecification {
 	MPEGVersion version;

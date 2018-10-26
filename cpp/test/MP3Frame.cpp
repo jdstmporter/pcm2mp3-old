@@ -37,7 +37,7 @@ offset_t MP3Frame::match(const MP3ValidFrame &v)  {
 	while ((it!=end) && !v(block.header) ) block.push(*(it++));
 
 	if(it==end) throw std::runtime_error("No frame header found");
-	offset=it-data.begin();
+
 	header=block.header;
 
 
@@ -49,6 +49,22 @@ offset_t MP3Frame::match(const MP3ValidFrame &v)  {
 
 	bitRate=mp3.rate(block.header.rate);
 	sampleRate=mp3.frequency(block.header.frequency);
+	crc=block.header.crc!=0;
+
+#ifdef COMPUTE_CRC
+	bool
+	if(hasCRC) {
+		CRCConverter c;
+		if(it+2>end) std::runtime_error("Block claims to have CRC, but does not contain one");
+		c.push(*(it++));
+		c.push(*(it++));
+		crc=CRC16(c.crc,it+size());
+	}
+	else {
+		crc=CRC16();
+	}
+#endif
+	offset=it-data.begin();
 	return offset-MP3::FrameHeaderSize+size();
 }
 
@@ -61,10 +77,15 @@ size_t MP3Frame::size() const {
 
 }
 
+
+
 std::ostream & operator<<(std::ostream &o,const mp3::MP3Frame &f) {
-	o << std::oct << f.fileOffset() << std::dec << " ";
-	o << f.Header() << " : " << std::setw(8) <<  " Samples " << f.SampleRate();
-	o << " Bits " << f.BitRate() << " " << f.Version() << " " << f.Layer() << " " << f.Mode() << " Length " << f.size();
+	auto c=(f.hasCRC()) ? "Yes" : "No";
+	o << std::oct << f.fileOffset() << std::dec << " "
+			<< f.Header() << " : " << std::setw(8) <<  " Samples " << f.SampleRate()
+			<< " Bits " << f.BitRate() << " " << "Has CRC: " << c << " "
+			<< f.Version() << " " << f.Layer() << " " << f.Mode()
+			<< " Length " << f.size();
 	return o;
 }
 

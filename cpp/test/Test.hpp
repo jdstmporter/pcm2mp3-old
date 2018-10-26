@@ -13,7 +13,7 @@
 
 namespace mp3 {
 
-struct TestResult {
+struct MP3TestResult {
 public:
 	MPEGSpecification spec;
 	double duration;
@@ -21,6 +21,7 @@ public:
 	unsigned bitrate;
 	unsigned samplerate;
 	unsigned nframes;
+	unsigned nCRC;
 
 	bool goodSampleRate;
 
@@ -29,37 +30,38 @@ public:
 	std::string message;
 	std::vector<std::string> log;
 
-	TestResult(const std::string &m=""): spec(), duration(0), nsamples(0),bitrate(0),samplerate(0),nframes(0),goodSampleRate(false), message(m), log() {};
-	TestResult(const MP3File &file,const bool verbose=false);
-	TestResult(const TestResult &) = default;
-	virtual ~TestResult() = default;
-	TestResult &operator=(const TestResult &) = default;
+	MP3TestResult(const std::string &m=""):
+		spec(), duration(0), nsamples(0),bitrate(0),samplerate(0),nframes(0),nCRC(0),goodSampleRate(false), message(m), log() {};
+	MP3TestResult(const MP3File &file,const bool verbose=false);
+	MP3TestResult(const MP3TestResult &) = default;
+	virtual ~MP3TestResult() = default;
+	MP3TestResult &operator=(const MP3TestResult &) = default;
 
 };
 
 
-class Test {
+class MP3Test {
 private:
 	std::string fname;
-	std::shared_ptr<TestResult> result;
+	std::shared_ptr<MP3TestResult> result;
 	std::string error;
 
 
 
 
 public:
-	Test(const std::string &name) : fname(name), result(), error() {};
-	virtual ~Test() = default;
+	MP3Test(const std::string &name) : fname(name), result(), error() {};
+	virtual ~MP3Test() = default;
 
 	void parse(const bool verbose=false);
-	std::shared_ptr<TestResult> operator()() const { return result; }
+	std::shared_ptr<MP3TestResult> operator()() const { return result; }
 	bool isGood() const { return result->isGood(); }
 	std::string message() const { return result->message; }
 };
 
 } /* namespace mp3 */
 
-std::ostream & operator<<(std::ostream &o,const mp3::TestResult &r);
+std::ostream & operator<<(std::ostream &o,const mp3::MP3TestResult &r);
 
 
 

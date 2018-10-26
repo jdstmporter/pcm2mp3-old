@@ -7,6 +7,7 @@ Created on 1 Dec 2017
 from setuptools import setup, Extension
 from setuptools.config import read_configuration
 import utils
+import os
 from collections import namedtuple
 from sys import exit
 
@@ -24,14 +25,15 @@ if not checker.run():
 configuration=read_configuration('setup.cfg')
 metadata=configuration['metadata']
 
-wsrc=[]
+def sourceFilesIn(folder,exclude=[]):
+    try:
+        items=os.listdir(folder)
+        return [os.path.join(folder,item) for item in items if item.endswith('.cpp') and item not in exclude]
+    except:
+        return []
 
-libsrc=['MP3Encoder.cpp', 'MP3Data.cpp','MP3File.cpp', 'PCMData.cpp','PCMFile.cpp', 'WAVFile.cpp','AIFFFile.cpp', 'Iterator32.cpp',
-        'DataChunk.cpp', 'Form.cpp', 'base.cpp', 'Conversions.cpp', 'transcoder.cpp']
-tstsrc=['MP3.cpp','MP3File.cpp','MP3Frame.cpp','Test.cpp']
-wsrc.extend([f'lib/{s}' for s in libsrc])
-wsrc.extend([f'test/{s}' for s in tstsrc])
-wsrc.extend(['MP3TestObject.cpp','PCMObject.cpp','MP3Object.cpp','Lame.cpp','PyHeader.cpp'])
+
+
 
 Version = namedtuple('Version',['major','minor','maintenance'])
 def processVersion():
@@ -50,13 +52,18 @@ def makeExtension(module,src):
                                      ('MINOR_VERSION', v.minor),
                                      ('MAINTENANCE_VERSION', v.maintenance),
                                      ('MODULE_VERSION', mv)],
-                    sources = ['cpp/'+s for s in src],
+                    sources = src,
                     language = 'c++',
                     include_dirs=['/usr/include'],
                     libraries = ['mp3lame'],
                     library_dirs = ['/usr/lib/x86_64-linux-gnu'])
 
-coder = makeExtension('pcm2mp3',wsrc)
+src=[]
+src.extend(sourceFilesIn('cpp'))
+src.extend(sourceFilesIn('cpp/test',['CRC16.cpp','mp3check.cpp']))
+src.extend(sourceFilesIn('cpp/lib',['lamer.cpp']))
+
+coder = makeExtension('pcm2mp3',src)
 
 with open('README.rst') as readme:
     longDescription = readme.read()

@@ -8,11 +8,30 @@ use File::Path qw(rmtree);
 use Cwd;
 use Carp;
 
+
 #rm -fr build
 #rm -fr dist
 #rm -fr pcm2mp3.egg-info
 
+sub getVersion {
+	open(my $cfg,'<','setup.cfg');
+	while (<$cfg>) {
+		if($_ =~ /\Aversion = ([0-9.]+)\s*\Z/) { 
+			close $cfg;
+			return $1; 
+		}
+	}
+	close $cfg;
+	undef;
+}
+
 my $arg=shift @ARGV;
+
+
+
+
+my $version=getVersion;
+say "Processing version $version";
 
 `sudo rm -fr /usr/local/lib/python3.6/dist-packages/pcm2mp3*`; 
 `rm -fr /home/julianporter/.cache/Python-Eggs/pcm2mp3*`;
@@ -22,7 +41,7 @@ my $arg=shift @ARGV;
 my $pwd = cwd;
 
 chdir "/";
-`sudo tar xzf /opt/projects/singlr/pcm2mp3/dist/pcm2mp3-1.10.linux-x86_64.tar.gz`;
+`sudo tar xzf /opt/projects/singlr/pcm2mp3/dist/pcm2mp3-$version.linux-x86_64.tar.gz`;
 chdir $pwd;
 
 `rm test.mp3`;

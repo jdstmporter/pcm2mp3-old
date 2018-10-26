@@ -27,7 +27,7 @@ void MP3Test_dealloc(PyMP3Test *self) {
 		p->ob_type->tp_free(p);
 	}
 	catch(std::exception &e) {
-		std::cerr << "    Something went wrong " << e.what();
+		//std::cerr << "    Something went wrong " << e.what();
 	}
 }
 
@@ -38,7 +38,7 @@ int MP3Test_init(PyMP3Test *self,PyObject *args,PyObject *keywords) {
 	std::string filename;
 	bool verbose = false;
 
-	std::cerr << "    About to parse positional arguments" << std::endl;
+	//std::cerr << "    About to parse positional arguments" << std::endl;
 
 	if(!PyTuple_Check(args))  {
 		PyErr_SetString(PyExc_OSError,"Arguments are not a tuple");
@@ -50,9 +50,9 @@ int MP3Test_init(PyMP3Test *self,PyObject *args,PyObject *keywords) {
 	}
 	filename=toString(PyTuple_GetItem(args,0));
 
-	std::cerr << "    Completed parsing positional arguments" << std::endl;
+	//std::cerr << "    Completed parsing positional arguments" << std::endl;
 
-	std::cerr << "    About to parse keyword arguments" << std::endl;
+	//std::cerr << "    About to parse keyword arguments" << std::endl;
 	if(!PyDict_Check(keywords)) {
 		PyErr_SetString(PyExc_OSError,"Keywords are not a dictionary");
 		return -1;
@@ -65,19 +65,19 @@ int MP3Test_init(PyMP3Test *self,PyObject *args,PyObject *keywords) {
 		std::string kv=toString(key);
 		kwargs[kv]=value;
 	}
-	std::for_each(kwargs.begin(),kwargs.end(),[](auto kv) { std::cerr << kv.first << std::endl;});
+	//std::for_each(kwargs.begin(),kwargs.end(),[](auto kv) { std::cerr << kv.first << std::endl;});
 	try { verbose=toBool(kwargs.at("verbose")); } catch(...) {}
 
-	std::cerr << "Filename : " << filename << " Verbose: " << verbose << std::endl;
+	//std::cerr << "Filename : " << filename << " Verbose: " << verbose << std::endl;
 
 	try {
-		Test test(filename);
+		MP3Test test(filename);
 		test.parse(verbose);
 		self->test=test();
 		return 0;
 	}
 	catch(std::exception &e) {
-		std::cerr << "    Error: Error while loading file and parsing" << std::endl;
+		//std::cerr << "    Error: Error while loading file and parsing" << std::endl;
 		PyErr_SetString(PyExc_OSError,e.what());
 		return -1;
 	}

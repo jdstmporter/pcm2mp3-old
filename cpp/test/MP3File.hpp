@@ -17,7 +17,7 @@ namespace mp3 {
 struct TestResult;
 
 class MP3File {
-	friend struct TestResult;
+	friend struct MP3TestResult;
 public:
 	using frameset_t = std::vector<MP3Frame>;
 	using iterator = std::vector<MP3Frame>::const_iterator;
