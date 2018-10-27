@@ -37,7 +37,7 @@ int main(int argc,char *argv[]) {
 		std::cout << "Loading " << infile << std::endl;
  		std::ifstream wav(infile,std::ifstream::binary);
 		std::cout << "Transcoding with output bit-rate " << rate << "kbps, quality " << quality << std::endl;
-		pylame::Transcode transcoder(wav,quality,rate);
+		pylame::Transcode transcoder(wav,quality,rate,infile.c_str());
 		std::cout << "Writing to " << outfile << std::endl;
 		std::ofstream out(outfile,std::ofstream::binary);
 		out << transcoder;

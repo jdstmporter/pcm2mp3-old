@@ -34,6 +34,9 @@ public:
 	unsigned size() const { return (unsigned)out.size(); };
 	const unsigned char * bytes() const { return out.data(); };
 	const char *chars() const { return reinterpret_cast<const char *>(out.data()); };
+
+	std::string &operator[](const mp3::ID3Tag &tag) { return parameters[tag]; };
+
 };
 
 } /* namespace pylam */

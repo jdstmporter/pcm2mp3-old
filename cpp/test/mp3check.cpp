@@ -5,20 +5,39 @@
  *      Author: julianporter
  */
 
+#include <iostream>
 #include <fstream>
 #include "mp3info.hpp"
+#include "ArgParseStandalone.h"
 
 int main(int argc,char *argv[]) {
-	try {
+	ArgParse::ArgParser parser("MP3 file verification and analysis");
+	bool verbose = false;
+	std::string infile = "";
 
-		std::string infile(argv[1]);
+	parser.AddArgument("-v/--verbose","Produce verbose output",&verbose,ArgParse::Argument::Optional);
+	parser.AddArgument("-i/--infile","File to analyse",&infile,ArgParse::Argument::Optional);
+
+	if(parser.ParseArgs(argc,argv)<0) {
+		std::cerr << "Cannot parse arguments correctly" << std::endl;
+		return -1;
+	}
+	if(parser.HelpPrinted()) return 0;
+
+
+
+	try {
+		std::cout << "Analysing " << infile;
+		if(verbose) std::cout << " with verbose output";
+		std::cout << std::endl;
+
 		mp3::MP3Test test(infile);
-		test.parse(false);
+		test.parse(verbose);
 		auto result=test();
 		std::cout << *result << std::endl;
 	}
 	catch(std::exception &e) {
-			std::cerr << e.what() << std::endl;
+			std::cerr << "ERROR: " << e.what() << std::endl;
 		}
 		return 0;
 }

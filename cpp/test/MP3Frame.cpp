@@ -12,29 +12,39 @@ namespace mp3 {
 
 size_t frame_size_index[] = {24000, 72000, 72000};
 
-union MP3HeaderConverter {
-	uint32_t bytes;
-	MP3Header header;
-	uint8_t b[4];
-
-	MP3HeaderConverter() : bytes(0) {};
-	void push(const char c) {
-		bytes=(bytes<<8)+(uint8_t)c;
-	};
-};
 
 
+MP3FrameFailureMode::MP3FrameFailureMode(const MP3Header &h) {
+	id = !(h.id==0x7ff);
+	version = h.version==1;
+	layer = h.layer==0;
+	rate = h.rate==15;
+	freq = h.frequency==3;
+	modeExt = (h.mode!=2) && (h.modeExtension!=0);
+	emphasis = h.emphasis==1;
+	sequence=false;
+}
 
+bool MP3FrameFailureMode::Fails() const  {
+	return id || version || layer || rate || freq || modeExt || emphasis || sequence;
+}
 
 
 offset_t MP3Frame::match(const MP3ValidFrame &v)  {
 
+	//std::cerr << "Matching initial : " << v.initial << " @ " << start << std::endl;
 	auto it=data.begin()+start;
-	auto end=data.end();
+	auto end=data.end()-MP3::MinimumFrameSize;
 
 	MP3HeaderConverter block;
 	block.bytes=0;
-	while ((it!=end) && !v(block.header) ) block.push(*(it++));
+	try {
+		while ((it<end) && v(block.header) ) block.push(*(it++));
+	}
+	catch(std::exception &e) {
+		std::cerr << "ERROR : " << e.what() << std::endl;
+		throw std::runtime_error("No frame header found");
+	}
 
 	if(it==end) throw std::runtime_error("No frame header found");
 
@@ -44,6 +54,7 @@ offset_t MP3Frame::match(const MP3ValidFrame &v)  {
 	mpeg = static_cast<MPEGVersion>(header.version);
 	layer=static_cast<MPEGLayer>(header.layer);
 	mode=static_cast<MPEGMode>(header.mode);
+	spec=MPEGSpecification(mpeg,layer,mode);
 	mp3=MP3(mpeg,layer);
 
 
@@ -51,20 +62,11 @@ offset_t MP3Frame::match(const MP3ValidFrame &v)  {
 	sampleRate=mp3.frequency(block.header.frequency);
 	crc=block.header.crc!=0;
 
-#ifdef COMPUTE_CRC
-	bool
-	if(hasCRC) {
-		CRCConverter c;
-		if(it+2>end) std::runtime_error("Block claims to have CRC, but does not contain one");
-		c.push(*(it++));
-		c.push(*(it++));
-		crc=CRC16(c.crc,it+size());
-	}
-	else {
-		crc=CRC16();
-	}
-#endif
+
+	//zero=std::all_of(it,end,[](char x) { return x == 0; });
+
 	offset=it-data.begin();
+	std::cerr << "Matched " << std::hex << block.bytes << std::dec << " at " << (offset-4) << std::endl;
 	return offset-MP3::FrameHeaderSize+size();
 }
 
@@ -80,13 +82,29 @@ size_t MP3Frame::size() const {
 
 
 std::ostream & operator<<(std::ostream &o,const mp3::MP3Frame &f) {
-	auto c=(f.hasCRC()) ? "Yes" : "No";
-	o << std::oct << f.fileOffset() << std::dec << " "
+	auto c=(f.hasCRC()) ? "Yes" : "No ";
+	auto z=(f.allZero()) ? "Yes" : "No ";
+	o << std::setw(8) << std::hex  << f.address()
+			<< std::dec << " (" << std::setw(8) << f.address() << ") "
 			<< f.Header() << " : " << std::setw(8) <<  " Samples " << f.SampleRate()
 			<< " Bits " << f.BitRate() << " " << "Has CRC: " << c << " "
 			<< f.Version() << " " << f.Layer() << " " << f.Mode()
-			<< " Length " << f.size();
+			<< " Length " << f.size()
+			<< " All zero " << z;
 	return o;
 }
 
+std::string _(const bool b) {
+	return b ? "BAD" : "GOOD";
+}
+
+std::ostream & operator<<(std::ostream &o,const mp3::MP3FrameFailureMode &m) {
+	if(!m.Fails()) o << "Frame good";
+	else {
+		o << "id " << _(m.id) << " version " << _(m.version) << " layer " << _(m.layer)
+				<< " bit rate " << _(m.rate) << " sample rate " << _(m.freq)
+				<< " mode " << _(m.modeExt) << " emphasis " << _(m.emphasis);
+	}
+	return o;
+}
 

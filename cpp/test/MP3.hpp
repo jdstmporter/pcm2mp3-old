@@ -22,9 +22,19 @@
 
 namespace mp3 {
 
+class MP3CheckError : public std::exception {
+private:
+	std::string message;
+public:
+	MP3CheckError() noexcept = default;
+	MP3CheckError(const std::string &m) noexcept : std::exception(), message(m) {};
+
+	const char * what() const noexcept { return message.c_str(); };
+};
+
 enum class MPEGVersion : unsigned {
 	MPEG25  = 0, // 0xb00,
-	MPEG2   = 1, // 0xb01,
+	MPEG2   = 2, // 0xb01,
 	MPEG1   = 3, // 0xb11,
 	Unknown = 255
 };
@@ -42,6 +52,12 @@ enum class MPEGMode : unsigned {
 	DualChannel=1,
 	Mono=3,
 	Unknown=255
+};
+
+enum class MPEGEmphasis : unsigned {
+	None=0,
+	MS50_15=2,
+	CCITJ17=3
 };
 
 struct MP3Header {
@@ -86,7 +102,17 @@ struct MPEGSpecification {
 };
 
 
+union MP3HeaderConverter {
+	uint32_t bytes;
+	MP3Header header;
+	uint8_t b[4];
 
+	MP3HeaderConverter() : bytes(0) {};
+	void push(const char c) {
+		bytes=(bytes<<8)+(uint8_t)c;
+	};
+	MP3HeaderConverter(const MP3Header h) : header(h) {};
+};
 
 class MP3 {
 	static std::map<MPEGLayer,unsigned> sizeIndex;

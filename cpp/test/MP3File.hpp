@@ -29,6 +29,7 @@ private:
 	frameset_t frames;
 	MP3Frame initial;
 	offset_t offset;
+	MPEGSpecification spec;
 
 
 public:
@@ -41,6 +42,7 @@ public:
 	double duration() const;
 	unsigned bitrate() const;
 	unsigned samplerate() const;
+	MPEGSpecification specification() const { return spec; }
 
 	iterator begin() const { return frames.cbegin(); }
 	iterator end() const { return frames.cend(); }

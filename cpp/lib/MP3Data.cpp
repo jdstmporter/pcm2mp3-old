@@ -6,6 +6,8 @@
  */
 
 #include "MP3Data.hpp"
+#include <chrono>
+#include <ctime>
 
 namespace pylame { namespace mp3 {
 
@@ -18,6 +20,26 @@ const std::map<std::string,ID3Tag> MP3Parameters::id3names = {
 		{ "track" , ID3Tag::Track },
 		{ "genre" , ID3Tag::Genre },
 };
+
+bool MP3Parameters::has(const ID3Tag tag) const {
+	return id3.find(tag)!=id3.end();
+}
+
+MP3Parameters::MP3Parameters(const unsigned q,const unsigned r) :
+		id3(), versions(ID3Versions::OneAndTwo),
+		copyright(false), original(false), quality(q), rate(r) {
+
+	try {
+		auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		auto tStruct=localtime(&now);
+		std::stringstream s;
+		s << tStruct->tm_year;
+		id3[ID3Tag::Year]=s.str();
+	}
+	catch(...) {};
+	id3[ID3Tag::Comment]="Converted by pcm2mp3 (c) JP Embedded Solutions 2018)";
+};
+
 
 void MP3Parameters::write(lame_global_flags *gf) const {
 	lame_set_copyright(gf,copyright);
@@ -37,9 +59,9 @@ void MP3Parameters::write(lame_global_flags *gf) const {
 			id3tag_pad_v2(gf);
 			break;
 	}
-	for(auto it=id3names.begin();it!=id3names.end();it++) {
-		auto tag=it->second;
-		auto value=it->first;
+	for(auto it=id3.begin();it!=id3.end();it++) {
+		auto tag=it->first;
+		auto value=it->second;
 		switch(tag) {
 		case ID3Tag::Title:
 			id3tag_set_title(gf,value.c_str());

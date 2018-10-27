@@ -46,11 +46,12 @@ pcm::PCMFile * select(const data_t &in) {
 }
 
 
-Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate) : out()  {
+Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate,const char *name) : out()  {
 	std::shared_ptr<pcm::PCMFile> infile(select(in));
 
 	//std::cout << "Got infile ; setting parameters" << std::endl;
 	MP3File mp3(quality,rate);
+	if(name!=nullptr) mp3[mp3::ID3Tag::Title]=name;
 	//std::cout << "Loading and transcoding file" << std::endl;
 	mp3.transcode(infile);
 	//std::cout << "Transcoded" << std::endl;
@@ -60,8 +61,9 @@ Transcode::Transcode(const data_t &in,const unsigned quality,const unsigned rate
 }
 
 
-Transcode::Transcode(const pcm::file_t &pcm,const unsigned quality,const unsigned rate) : out() {
+Transcode::Transcode(const pcm::file_t &pcm,const unsigned quality,const unsigned rate,const char *name) : out() {
 	MP3File mp3(quality,rate);
+	if(name!=nullptr) mp3[mp3::ID3Tag::Title]=name;
 	mp3.transcode(pcm);
 	out.assign(mp3.cbegin(),mp3.cend());
 }

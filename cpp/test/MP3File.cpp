@@ -34,6 +34,8 @@ std::vector<char> MP3File::readBinaryFile(std::istream &stream) {
 MP3File::MP3File(std::istream &stream) : mp3(readBinaryFile(stream)), frames(), initial(mp3,0) {
 	offset=initial.match();
 	frames.push_back(initial);
+	spec=initial.Specification();
+	if(MP3::verbose) std::cout << initial << std::endl;
 }
 
 

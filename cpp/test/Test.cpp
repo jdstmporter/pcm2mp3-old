@@ -21,7 +21,7 @@ inline std::string _(const MP3Frame &f) {
 }
 
 MP3TestResult::MP3TestResult(const MP3File &file,const bool verbose) :
-		spec(file.initial.Version(),file.initial.Layer(),file.initial.Mode()),
+		spec(file.specification()),
 		duration(file.duration()),
 		nsamples(file.size()),
 		bitrate(1000*file.bitrate()),
